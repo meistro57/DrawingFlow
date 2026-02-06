@@ -1,0 +1,135 @@
+<script setup>
+import { ref, computed } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+const showMobileMenu = ref(false);
+
+const navigation = [
+    { name: 'Dashboard', href: '/', routeName: 'dashboard' },
+];
+
+function logout() {
+    router.post(route('logout'));
+}
+</script>
+
+<template>
+    <div class="min-h-screen bg-gray-100">
+        <!-- Navigation -->
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <!-- Logo -->
+                        <div class="shrink-0 flex items-center">
+                            <Link href="/" class="text-xl font-bold text-primary-600">
+                                DrawingFlow
+                            </Link>
+                        </div>
+
+                        <!-- Desktop Navigation -->
+                        <div class="hidden sm:ml-8 sm:flex sm:space-x-4">
+                            <Link
+                                v-for="item in navigation"
+                                :key="item.name"
+                                :href="item.href"
+                                class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
+                                :class="[
+                                    $page.url === item.href
+                                        ? 'text-primary-700 bg-primary-50'
+                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                ]"
+                            >
+                                {{ item.name }}
+                            </Link>
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="hidden sm:flex sm:items-center sm:space-x-4">
+                        <span class="text-sm text-gray-600">{{ user?.name }}</span>
+                        <button
+                            @click="logout"
+                            class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                            Logout
+                        </button>
+                    </div>
+
+                    <!-- Mobile menu button -->
+                    <div class="sm:hidden flex items-center">
+                        <button
+                            @click="showMobileMenu = !showMobileMenu"
+                            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                        >
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path
+                                    v-if="!showMobileMenu"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16"
+                                />
+                                <path
+                                    v-else
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div v-show="showMobileMenu" class="sm:hidden border-t border-gray-200">
+                <div class="pt-2 pb-3 space-y-1 px-4">
+                    <Link
+                        v-for="item in navigation"
+                        :key="item.name"
+                        :href="item.href"
+                        class="block px-3 py-2 text-base font-medium rounded-md"
+                        :class="[
+                            $page.url === item.href
+                                ? 'text-primary-700 bg-primary-50'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ]"
+                    >
+                        {{ item.name }}
+                    </Link>
+                </div>
+                <div class="pt-4 pb-3 border-t border-gray-200 px-4">
+                    <div class="text-sm font-medium text-gray-800">{{ user?.name }}</div>
+                    <div class="text-sm text-gray-500">{{ user?.email }}</div>
+                    <button
+                        @click="logout"
+                        class="mt-3 block w-full text-left px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md"
+                    >
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Flash Messages -->
+        <div v-if="$page.props.flash?.success" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+                {{ $page.props.flash.success }}
+            </div>
+        </div>
+        <div v-if="$page.props.flash?.error" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                {{ $page.props.flash.error }}
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <main>
+            <slot />
+        </main>
+    </div>
+</template>
