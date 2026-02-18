@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import StatusBadge from '@/Components/StatusBadge.vue';
 
 const props = defineProps({
     stats: Object,
@@ -14,49 +15,33 @@ const statCards = computed(() => [
         name: 'Active Projects',
         value: props.stats.active_projects,
         color: 'bg-blue-500',
+        href: '/projects',
     },
     {
         name: 'Pending Requests',
         value: props.stats.pending_requests,
         color: 'bg-yellow-500',
+        href: '/drawing-requests',
     },
     {
         name: 'In Progress',
         value: props.stats.in_progress_requests,
         color: 'bg-indigo-500',
+        href: '/drawing-requests',
     },
     {
         name: 'Awaiting Approval',
         value: props.stats.awaiting_approval,
         color: 'bg-orange-500',
+        href: '/submittals',
     },
     {
         name: 'Fab Queue',
         value: props.stats.fab_queue_count,
         color: 'bg-green-500',
+        href: '/fab-queue',
     },
 ]);
-
-function statusBadgeClass(status) {
-    const classes = {
-        pending: 'bg-gray-100 text-gray-800',
-        in_progress: 'bg-blue-100 text-blue-800',
-        ready_to_submit: 'bg-indigo-100 text-indigo-800',
-        submitted: 'bg-yellow-100 text-yellow-800',
-        approved: 'bg-green-100 text-green-800',
-        approved_as_noted: 'bg-lime-100 text-lime-800',
-        revise_and_resubmit: 'bg-orange-100 text-orange-800',
-        rejected: 'bg-red-100 text-red-800',
-        draft: 'bg-gray-100 text-gray-600',
-        on_hold: 'bg-purple-100 text-purple-800',
-        cancelled: 'bg-red-50 text-red-600',
-    };
-    return classes[status] || 'bg-gray-100 text-gray-800';
-}
-
-function formatStatus(status) {
-    return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-}
 </script>
 
 <template>
@@ -66,19 +51,28 @@ function formatStatus(status) {
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Header -->
-                <div class="mb-8">
-                    <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-                    <p class="mt-1 text-sm text-gray-500">
-                        Overview of your drawing workflow pipeline.
-                    </p>
+                <div class="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Overview of your drawing workflow pipeline.
+                        </p>
+                    </div>
+                    <Link
+                        :href="route('drawing-requests.create')"
+                        class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition"
+                    >
+                        New Request
+                    </Link>
                 </div>
 
                 <!-- Stats Grid -->
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
-                    <div
+                    <Link
                         v-for="stat in statCards"
                         :key="stat.name"
-                        class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200"
+                        :href="stat.href"
+                        class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
                     >
                         <div class="p-5">
                             <div class="flex items-center">
@@ -95,21 +89,23 @@ function formatStatus(status) {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 </div>
 
                 <!-- Two Column Layout -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Recent Drawing Requests -->
                     <div class="bg-white shadow-sm rounded-lg border border-gray-200">
-                        <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                             <h2 class="text-lg font-medium text-gray-900">Recent Drawing Requests</h2>
+                            <Link :href="route('drawing-requests.index')" class="text-sm text-primary-600 hover:text-primary-800 font-medium">View All</Link>
                         </div>
                         <div class="divide-y divide-gray-200">
-                            <div
+                            <Link
                                 v-for="request in recent_requests"
                                 :key="request.id"
-                                class="px-6 py-4 hover:bg-gray-50 transition-colors"
+                                :href="route('drawing-requests.show', request.id)"
+                                class="block px-6 py-4 hover:bg-gray-50 transition-colors"
                             >
                                 <div class="flex items-center justify-between">
                                     <div class="min-w-0 flex-1">
@@ -121,29 +117,28 @@ function formatStatus(status) {
                                             <span v-if="request.project"> &middot; {{ request.project.name }}</span>
                                         </p>
                                     </div>
-                                    <span
-                                        :class="[statusBadgeClass(request.status), 'ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium']"
-                                    >
-                                        {{ formatStatus(request.status) }}
-                                    </span>
+                                    <StatusBadge :status="request.status" class="ml-3" />
                                 </div>
-                            </div>
+                            </Link>
                             <div v-if="!recent_requests?.length" class="px-6 py-8 text-center text-sm text-gray-500">
                                 No drawing requests yet.
+                                <Link :href="route('drawing-requests.create')" class="block mt-2 text-primary-600 hover:text-primary-800 font-medium">Create your first request</Link>
                             </div>
                         </div>
                     </div>
 
                     <!-- Recent Submittals -->
                     <div class="bg-white shadow-sm rounded-lg border border-gray-200">
-                        <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                             <h2 class="text-lg font-medium text-gray-900">Recent Submittals</h2>
+                            <Link :href="route('submittals.index')" class="text-sm text-primary-600 hover:text-primary-800 font-medium">View All</Link>
                         </div>
                         <div class="divide-y divide-gray-200">
-                            <div
+                            <Link
                                 v-for="submittal in recent_submittals"
                                 :key="submittal.id"
-                                class="px-6 py-4 hover:bg-gray-50 transition-colors"
+                                :href="route('submittals.show', submittal.id)"
+                                class="block px-6 py-4 hover:bg-gray-50 transition-colors"
                             >
                                 <div class="flex items-center justify-between">
                                     <div class="min-w-0 flex-1">
@@ -156,13 +151,9 @@ function formatStatus(status) {
                                             <span v-if="submittal.customer"> &middot; {{ submittal.customer.name }}</span>
                                         </p>
                                     </div>
-                                    <span
-                                        :class="[statusBadgeClass(submittal.status), 'ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium']"
-                                    >
-                                        {{ formatStatus(submittal.status) }}
-                                    </span>
+                                    <StatusBadge :status="submittal.status" class="ml-3" />
                                 </div>
-                            </div>
+                            </Link>
                             <div v-if="!recent_submittals?.length" class="px-6 py-8 text-center text-sm text-gray-500">
                                 No submittals yet.
                             </div>

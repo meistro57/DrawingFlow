@@ -7,8 +7,18 @@ const user = computed(() => page.props.auth.user);
 const showMobileMenu = ref(false);
 
 const navigation = [
-    { name: 'Dashboard', href: '/', routeName: 'dashboard' },
+    { name: 'Dashboard', href: '/', prefix: '/' },
+    { name: 'Requests', href: '/drawing-requests', prefix: '/drawing-requests' },
+    { name: 'Submittals', href: '/submittals', prefix: '/submittals' },
+    { name: 'Fab Queue', href: '/fab-queue', prefix: '/fab-queue' },
+    { name: 'Projects', href: '/projects', prefix: '/projects' },
+    { name: 'Customers', href: '/customers', prefix: '/customers' },
 ];
+
+function isActive(item) {
+    if (item.prefix === '/') return page.props.ziggy?.location?.endsWith('/') || page.url === '/';
+    return page.url?.startsWith(item.prefix);
+}
 
 function logout() {
     router.post(route('logout'));
@@ -37,7 +47,7 @@ function logout() {
                                 :href="item.href"
                                 class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
                                 :class="[
-                                    $page.url === item.href
+                                    isActive(item)
                                         ? 'text-primary-700 bg-primary-50'
                                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                                 ]"
@@ -94,7 +104,7 @@ function logout() {
                         :href="item.href"
                         class="block px-3 py-2 text-base font-medium rounded-md"
                         :class="[
-                            $page.url === item.href
+                            isActive(item)
                                 ? 'text-primary-700 bg-primary-50'
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                         ]"
