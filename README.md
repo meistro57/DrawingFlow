@@ -112,16 +112,16 @@ cd DrawingFlow
 cp .env.example .env
 
 # 3. Start Docker containers
-docker-compose up -d
+docker compose up -d
 
 # 4. Install PHP dependencies
-docker-compose exec app composer install
+docker compose exec app composer install
 
 # 5. Generate application key
-docker-compose exec app php artisan key:generate
+docker compose exec app php artisan key:generate
 
 # 6. Run database migrations
-docker-compose exec app php artisan migrate --seed
+docker compose exec app php artisan migrate --seed
 
 # 7. Install frontend dependencies
 npm install
