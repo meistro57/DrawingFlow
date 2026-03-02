@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
 import Modal from '@/Components/Modal.vue';
+import FileUpload from '@/Components/FileUpload.vue';
 
 const props = defineProps({
     submittal: Object,
@@ -55,12 +56,45 @@ function deleteSubmittal() {
     }
 }
 
+function deleteFile(file) {
+    if (confirm(`Delete "${file.original_filename}"? This cannot be undone.`)) {
+        router.delete(route('submittal-files.destroy', file.id));
+    }
+}
+
+function formatBytes(bytes) {
+    if (!bytes) return '-';
+    if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+    if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return bytes + ' B';
+}
+
 const approvalTypeLabels = {
     approved: 'Approved',
     approved_as_noted: 'Approved as Noted',
     revise_and_resubmit: 'Revise & Resubmit',
     rejected: 'Rejected',
     field_verify_required: 'Field Verify Required',
+};
+
+const fileTypeLabels = {
+    drawing: 'Drawing',
+    calculation: 'Calculation',
+    specification: 'Specification',
+    photo: 'Photo',
+    markup: 'Markup',
+    approval: 'Approval',
+    other: 'Other',
+};
+
+const fileTypeColors = {
+    drawing: 'bg-blue-100 text-blue-800',
+    calculation: 'bg-purple-100 text-purple-800',
+    specification: 'bg-yellow-100 text-yellow-800',
+    photo: 'bg-pink-100 text-pink-800',
+    markup: 'bg-orange-100 text-orange-800',
+    approval: 'bg-green-100 text-green-800',
+    other: 'bg-gray-100 text-gray-600',
 };
 </script>
 
@@ -167,6 +201,67 @@ const approvalTypeLabels = {
                             </dl>
                         </div>
 
+                        <!-- Files Section -->
+                        <div class="bg-white shadow-sm rounded-lg border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h2 class="text-lg font-medium text-gray-900">Files</h2>
+                                <p class="text-sm text-gray-500 mt-1">Drawings, calculations, and approval documents.</p>
+                            </div>
+
+                            <!-- File List -->
+                            <div v-if="submittal.files?.length" class="divide-y divide-gray-200">
+                                <div
+                                    v-for="file in submittal.files"
+                                    :key="file.id"
+                                    class="px-6 py-4 flex items-center justify-between"
+                                >
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center space-x-3">
+                                            <svg class="h-5 w-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">{{ file.original_filename }}</p>
+                                                <p class="text-xs text-gray-500">
+                                                    {{ formatBytes(file.file_size) }}
+                                                    <span v-if="file.uploaded_by"> &middot; {{ file.uploaded_by.name }}</span>
+                                                    <span v-if="file.notes"> &middot; {{ file.notes }}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4 flex items-center space-x-3 shrink-0">
+                                        <span
+                                            :class="[fileTypeColors[file.file_type] || 'bg-gray-100 text-gray-600', 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium']"
+                                        >
+                                            {{ fileTypeLabels[file.file_type] || file.file_type }}
+                                        </span>
+                                        <a
+                                            :href="route('submittal-files.download', file.id)"
+                                            class="text-primary-600 hover:text-primary-800 text-sm"
+                                        >
+                                            Download
+                                        </a>
+                                        <button
+                                            @click="deleteFile(file)"
+                                            class="text-red-600 hover:text-red-800 text-sm"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else class="px-6 py-6 text-center text-sm text-gray-500">
+                                No files uploaded yet.
+                            </div>
+
+                            <!-- Upload Widget -->
+                            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                                <h3 class="text-sm font-medium text-gray-700 mb-3">Upload File</h3>
+                                <FileUpload :upload-route="route('submittal-files.store', submittal.id)" />
+                            </div>
+                        </div>
+
                         <!-- Approval History -->
                         <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
                             <div class="px-6 py-4 border-b border-gray-200">
@@ -228,6 +323,13 @@ const approvalTypeLabels = {
                                     <dd class="text-sm font-medium text-gray-900">{{ submittal.fab_queue_entry.assigned_to.name }}</dd>
                                 </div>
                             </dl>
+                        </div>
+
+                        <!-- File Summary -->
+                        <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+                            <h3 class="text-sm font-medium text-gray-500 mb-3">File Summary</h3>
+                            <p class="text-2xl font-bold text-gray-900">{{ submittal.files?.length || 0 }}</p>
+                            <p class="text-xs text-gray-500">file{{ (submittal.files?.length || 0) === 1 ? '' : 's' }} attached</p>
                         </div>
                     </div>
                 </div>

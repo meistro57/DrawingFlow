@@ -1,4 +1,5 @@
 <script setup>
+import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
@@ -7,7 +8,37 @@ import EmptyState from '@/Components/EmptyState.vue';
 
 const props = defineProps({
     submittals: Object,
+    filters: Object,
 });
+
+const localFilters = ref({
+    status: props.filters?.status || '',
+    search: props.filters?.search || '',
+});
+
+let searchTimer = null;
+
+function applyFilters() {
+    router.get(
+        route('submittals.index'),
+        Object.fromEntries(Object.entries(localFilters.value).filter(([, v]) => v !== '')),
+        { preserveState: true, replace: true }
+    );
+}
+
+function onSearchInput() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilters, 400);
+}
+
+watch(() => localFilters.value.status, applyFilters);
+
+function clearFilters() {
+    localFilters.value = { status: '', search: '' };
+    router.get(route('submittals.index'), {}, { preserveState: true, replace: true });
+}
+
+const hasActiveFilters = () => localFilters.value.status || localFilters.value.search;
 </script>
 
 <template>
@@ -19,6 +50,41 @@ const props = defineProps({
                 <div class="mb-6">
                     <h1 class="text-2xl font-bold text-gray-900">Submittals</h1>
                     <p class="mt-1 text-sm text-gray-500">Track drawing submittals and approval status.</p>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4 mb-4">
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <input
+                            v-model="localFilters.search"
+                            @input="onSearchInput"
+                            type="text"
+                            placeholder="Search submittals..."
+                            class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-56"
+                        />
+                        <select
+                            v-model="localFilters.status"
+                            class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        >
+                            <option value="">All Statuses</option>
+                            <option value="draft">Draft</option>
+                            <option value="ready_to_submit">Ready to Submit</option>
+                            <option value="submitted">Submitted</option>
+                            <option value="approved">Approved</option>
+                            <option value="approved_as_noted">Approved as Noted</option>
+                            <option value="revise_and_resubmit">Revise &amp; Resubmit</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="field_verify_required">Field Verify Required</option>
+                            <option value="superseded">Superseded</option>
+                        </select>
+                        <button
+                            v-if="hasActiveFilters()"
+                            @click="clearFilters"
+                            class="text-sm text-gray-500 hover:text-gray-700 underline"
+                        >
+                            Clear filters
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
@@ -62,7 +128,7 @@ const props = defineProps({
                             </tr>
                         </tbody>
                     </table>
-                    <EmptyState v-else title="No submittals yet" description="Submittals are created from drawing requests." />
+                    <EmptyState v-else title="No submittals found" description="Submittals are created from drawing requests. Try adjusting your filters." />
 
                     <Pagination :links="submittals.links" />
                 </div>

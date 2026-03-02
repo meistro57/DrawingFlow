@@ -1,8 +1,8 @@
 # 🤖 AGENTS.md - DrawingFlow Development Guide
 
-**Last Updated:** February 6, 2026  
-**Project:** DrawingFlow - Steel Fabrication Shop Drawing Workflow System  
-**Status:** Foundation Phase - Standalone Module (Future SteelFlow MRP Integration)
+**Last Updated:** March 2, 2026
+**Project:** DrawingFlow - Steel Fabrication Shop Drawing Workflow System
+**Status:** Phase 2 Complete - File Uploads, Filtering, Feature Tests (Future SteelFlow MRP Integration)
 
 ---
 
@@ -42,8 +42,8 @@ DrawingFlow is a precision-engineered workflow management system for steel fabri
 
 ### Current Status
 
-- **Phase:** Foundation (Phase 0)
-- **Version:** 0.1.0-alpha
+- **Phase:** Phase 2 Complete (File Uploads + Filtering + Tests)
+- **Version:** 0.3.0-alpha
 - **Environment:** Development
 - **Deployment:** Not yet deployed
 
@@ -1738,22 +1738,44 @@ separation of concerns...
 
 ## 🎯 Current Development Focus
 
-**Phase 0: Foundation** (In Progress)
+**Phase 2: File Uploads + Filtering + Tests** (Complete as of March 2026)
 
-**Immediate Tasks:**
+**Phase 0: Foundation** ✅ Complete
 1. ✅ Create GitHub repository
 2. ✅ Write comprehensive AGENTS.md
-3. ⏳ Extract customer/project models from SteelFlow
-4. ⏳ Set up fresh Laravel 12 project
-5. ⏳ Configure Docker environment
-6. ⏳ Create initial database migrations
-7. ⏳ Set up authentication
-8. ⏳ Build dashboard skeleton
+3. ✅ Extract customer/project models from SteelFlow
+4. ✅ Set up fresh Laravel 12 project
+5. ✅ Configure Docker environment
+6. ✅ Create initial database migrations
+7. ✅ Set up authentication
+8. ✅ Build dashboard skeleton
 
-**Next Up:**
-- Phase 1: Core Workflow implementation
-- Drawing request CRUD
-- Basic status tracking
+**Phase 1: Core Workflow CRUD** ✅ Complete
+- ✅ Drawing request CRUD (create, edit, list, show, delete)
+- ✅ Status transitions (assign, mark ready, cancel, hold)
+- ✅ Submittal workflow (create from request, submit, process approval, create revision)
+- ✅ Fab queue (assign, complete, notes)
+- ✅ Dashboard with live stats
+- ✅ Customer & Project management
+- ✅ Services: DrawingRequestService, SubmittalService, FabHandoffService
+
+**Phase 2: File Uploads + Filtering + Tests** ✅ Complete
+- ✅ File upload system (SubmittalFileController, FileUpload.vue component)
+- ✅ File download and delete for submittal attachments
+- ✅ Files section on Submittals/Show with drag-and-drop uploader
+- ✅ Status + priority + search filtering on Drawing Requests index
+- ✅ Status + search filtering on Submittals index
+- ✅ Model factories for Customer, Project, DrawingRequest, DrawingSubmittal
+- ✅ Feature tests: DrawingRequestTest (11 tests)
+- ✅ Feature tests: SubmittalTest (10 tests)
+
+**Phase 3: Next Up**
+- PDF viewer integration (in-browser PDF rendering)
+- PDF markup tools (highlight, annotate, stamp)
+- Email notifications (submittal submitted, approval received)
+- Customer portal / external approval link
+- Reporting and export (CSV, PDF reports)
+- Role-based access control (admin vs detailer vs viewer)
 
 ---
 

@@ -1,4 +1,5 @@
 <script setup>
+import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
@@ -7,7 +8,36 @@ import EmptyState from '@/Components/EmptyState.vue';
 
 const props = defineProps({
     requests: Object,
+    filters: Object,
 });
+
+const localFilters = ref({
+    status: props.filters?.status || '',
+    priority: props.filters?.priority || '',
+    search: props.filters?.search || '',
+});
+
+let searchTimer = null;
+
+function applyFilters() {
+    router.get(
+        route('drawing-requests.index'),
+        Object.fromEntries(Object.entries(localFilters.value).filter(([, v]) => v !== '')),
+        { preserveState: true, replace: true }
+    );
+}
+
+function onSearchInput() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilters, 400);
+}
+
+watch(() => [localFilters.value.status, localFilters.value.priority], applyFilters);
+
+function clearFilters() {
+    localFilters.value = { status: '', priority: '', search: '' };
+    router.get(route('drawing-requests.index'), {}, { preserveState: true, replace: true });
+}
 
 function deleteRequest(request) {
     if (confirm(`Are you sure you want to delete "${request.title}"?`)) {
@@ -21,6 +51,9 @@ const priorityClasses = {
     normal: 'bg-blue-100 text-blue-800',
     low: 'bg-gray-100 text-gray-600',
 };
+
+const hasActiveFilters = () =>
+    localFilters.value.status || localFilters.value.priority || localFilters.value.search;
 </script>
 
 <template>
@@ -40,6 +73,49 @@ const priorityClasses = {
                     >
                         New Request
                     </Link>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4 mb-4">
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <input
+                            v-model="localFilters.search"
+                            @input="onSearchInput"
+                            type="text"
+                            placeholder="Search requests..."
+                            class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm w-56"
+                        />
+                        <select
+                            v-model="localFilters.status"
+                            class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        >
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="ready_to_submit">Ready to Submit</option>
+                            <option value="submitted">Submitted</option>
+                            <option value="approved">Approved</option>
+                            <option value="on_hold">On Hold</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <select
+                            v-model="localFilters.priority"
+                            class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        >
+                            <option value="">All Priorities</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="high">High</option>
+                            <option value="normal">Normal</option>
+                            <option value="low">Low</option>
+                        </select>
+                        <button
+                            v-if="hasActiveFilters()"
+                            @click="clearFilters"
+                            class="text-sm text-gray-500 hover:text-gray-700 underline"
+                        >
+                            Clear filters
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
@@ -86,7 +162,7 @@ const priorityClasses = {
                             </tr>
                         </tbody>
                     </table>
-                    <EmptyState v-else title="No drawing requests yet" description="Create your first drawing request to get started.">
+                    <EmptyState v-else title="No drawing requests found" description="Try adjusting your filters or create your first drawing request.">
                         <template #action>
                             <Link :href="route('drawing-requests.create')" class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition">
                                 New Request

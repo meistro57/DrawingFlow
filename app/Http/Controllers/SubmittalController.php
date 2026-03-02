@@ -20,12 +20,27 @@ class SubmittalController extends Controller
 
     public function index(): Response
     {
-        $submittals = DrawingSubmittal::with(['project', 'customer', 'submittedBy', 'drawingRequest'])
-            ->latest()
-            ->paginate(15);
+        $filters = request()->only(['status', 'search']);
+
+        $query = DrawingSubmittal::with(['project', 'customer', 'submittedBy', 'drawingRequest'])
+            ->latest();
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('submittal_number', 'like', "%{$search}%")
+                    ->orWhereHas('project', fn ($p) => $p->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$search}%"));
+            });
+        }
 
         return Inertia::render('Submittals/Index', [
-            'submittals' => $submittals,
+            'submittals' => $query->paginate(15)->withQueryString(),
+            'filters' => $filters,
         ]);
     }
 
@@ -38,6 +53,7 @@ class SubmittalController extends Controller
             'drawingRequest',
             'approvals' => fn ($q) => $q->with('createdBy')->latest(),
             'fabQueueEntry.assignedTo',
+            'files' => fn ($q) => $q->with('uploadedBy')->latest(),
         ]);
 
         return Inertia::render('Submittals/Show', [

@@ -8,6 +8,7 @@ use App\Http\Controllers\DrawingRequestController;
 use App\Http\Controllers\FabQueueController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SubmittalController;
+use App\Http\Controllers\SubmittalFileController;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes
@@ -47,6 +48,11 @@ Route::middleware('auth')->group(function () {
     Route::post('submittals/{submittal}/submit', [SubmittalController::class, 'submit'])->name('submittals.submit');
     Route::post('submittals/{submittal}/process-approval', [SubmittalController::class, 'processApproval'])->name('submittals.process-approval');
     Route::post('submittals/{submittal}/create-revision', [SubmittalController::class, 'createRevision'])->name('submittals.create-revision');
+
+    // Submittal Files
+    Route::post('submittals/{submittal}/files', [SubmittalFileController::class, 'store'])->name('submittal-files.store');
+    Route::get('submittal-files/{submittal_file}/download', [SubmittalFileController::class, 'download'])->name('submittal-files.download');
+    Route::delete('submittal-files/{submittal_file}', [SubmittalFileController::class, 'destroy'])->name('submittal-files.destroy');
 
     // Fab Queue
     Route::get('fab-queue', [FabQueueController::class, 'index'])->name('fab-queue.index');

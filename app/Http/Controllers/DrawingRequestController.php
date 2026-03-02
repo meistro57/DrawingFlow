@@ -20,12 +20,32 @@ class DrawingRequestController extends Controller
 
     public function index(): Response
     {
-        $requests = DrawingRequest::with(['project', 'customer', 'assignedTo'])
-            ->latest()
-            ->paginate(15);
+        $filters = request()->only(['status', 'priority', 'search']);
+
+        $query = DrawingRequest::with(['project', 'customer', 'assignedTo'])
+            ->latest();
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['priority'])) {
+            $query->where('priority', $filters['priority']);
+        }
+
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('request_number', 'like', "%{$search}%")
+                    ->orWhereHas('project', fn ($p) => $p->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$search}%"));
+            });
+        }
 
         return Inertia::render('DrawingRequests/Index', [
-            'requests' => $requests,
+            'requests' => $query->paginate(15)->withQueryString(),
+            'filters' => $filters,
         ]);
     }
 
