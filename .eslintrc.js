@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import vuePlugin from 'eslint-plugin-vue';
 import globals from 'globals';
 
+/** @type {import('eslint').Linter.Config[]} */
 export default [
     {
         files: ['resources/js/**/*.js', 'resources/js/**/*.vue'],
