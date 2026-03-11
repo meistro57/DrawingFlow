@@ -23,6 +23,10 @@ class DashboardController extends Controller
                 'awaiting_approval' => DrawingSubmittal::status('submitted')->count(),
                 'fab_queue_count' => FabQueue::queued()->count(),
             ],
+            'projects' => Project::with(['customer', 'drawingRequests', 'submittals', 'fabQueueEntries'])
+                ->latest()
+                ->take(10)
+                ->get(),
             'recent_requests' => DrawingRequest::with(['project', 'customer', 'assignedTo'])
                 ->latest()
                 ->take(5)
