@@ -57,6 +57,11 @@ class Project extends Model
         return $this->hasMany(FabQueue::class);
     }
 
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ProjectAttachment::class);
+    }
+
     // Scopes
 
     public function scopeActive($query)

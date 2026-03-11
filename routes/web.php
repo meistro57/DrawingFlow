@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DrawingRequestController;
 use App\Http\Controllers\FabQueueController;
+use App\Http\Controllers\ProjectAttachmentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SubmittalController;
 use Illuminate\Support\Facades\Route;
@@ -28,9 +30,12 @@ Route::middleware('auth')->group(function () {
 
     // Customers
     Route::resource('customers', CustomerController::class);
+    Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
 
     // Projects
     Route::resource('projects', ProjectController::class);
+    Route::get('projects/{project}/attachments/{attachment}/view', [ProjectAttachmentController::class, 'view'])->name('projects.attachments.view');
+    Route::get('projects/{project}/attachments/{attachment}/download', [ProjectAttachmentController::class, 'download'])->name('projects.attachments.download');
 
     // Drawing Requests
     Route::resource('drawing-requests', DrawingRequestController::class);
@@ -54,4 +59,11 @@ Route::middleware('auth')->group(function () {
     Route::post('fab-queue/{fab_queue}/assign', [FabQueueController::class, 'assign'])->name('fab-queue.assign');
     Route::post('fab-queue/{fab_queue}/complete', [FabQueueController::class, 'complete'])->name('fab-queue.complete');
     Route::put('fab-queue/{fab_queue}/notes', [FabQueueController::class, 'updateNotes'])->name('fab-queue.update-notes');
+
+    // Admin
+    Route::middleware('can:admin-access')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
+        Route::post('users', [UserManagementController::class, 'store'])->name('users.store');
+        Route::put('users/{user}', [UserManagementController::class, 'update'])->name('users.update');
+    });
 });

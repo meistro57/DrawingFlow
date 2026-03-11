@@ -32,3 +32,12 @@ auth.json
 Homestead.yaml
 Homestead.json
 /.vagrant
+.aider*
+
+# Local AI tooling
+.agents/
+.ai/
+.claude/
+.codex/
+.mcp.json
+CLAUDE.md

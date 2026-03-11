@@ -30,4 +30,7 @@ RUN useradd -G www-data,root -u $uid -d /home/$user $user \
 
 WORKDIR /var/www
 
+USER root
+COPY uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
 USER $user

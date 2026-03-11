@@ -43,9 +43,15 @@ class CustomerWorkflow extends Model
     public function requiresMultipleApprovals(): bool
     {
         $count = 0;
-        if ($this->requires_architect_approval) $count++;
-        if ($this->requires_engineer_approval) $count++;
-        if ($this->requires_gc_approval) $count++;
+        if ($this->requires_architect_approval) {
+            $count++;
+        }
+        if ($this->requires_engineer_approval) {
+            $count++;
+        }
+        if ($this->requires_gc_approval) {
+            $count++;
+        }
 
         return $count > 1;
     }

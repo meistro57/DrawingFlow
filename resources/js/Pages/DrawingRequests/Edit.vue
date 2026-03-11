@@ -8,6 +8,7 @@ const props = defineProps({
     customers: Array,
     projects: Array,
     users: Array,
+    drawingTypes: Array,
 });
 
 const form = useForm({
@@ -96,8 +97,14 @@ function submit() {
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Drawing Type</label>
-                                <input v-model="form.drawing_type" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" />
+                                <label class="block text-sm font-medium text-gray-700">Drawing Type *</label>
+                                <select v-model="form.drawing_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                                    <option value="">Select drawing type</option>
+                                    <option v-for="drawingType in drawingTypes" :key="drawingType" :value="drawingType">
+                                        {{ drawingType }}
+                                    </option>
+                                </select>
+                                <p v-if="form.errors.drawing_type" class="mt-1 text-sm text-red-600">{{ form.errors.drawing_type }}</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Required Date</label>

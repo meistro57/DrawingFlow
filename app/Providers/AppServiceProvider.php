@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Models\DrawingSubmittal;
 use App\Models\FabQueue;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,5 +26,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Route::model('submittal', DrawingSubmittal::class);
         Route::model('fab_queue', FabQueue::class);
+
+        Gate::define('admin-access', function (User $user): bool {
+            return $user->isAdmin();
+        });
     }
 }

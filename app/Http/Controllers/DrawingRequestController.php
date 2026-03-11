@@ -35,6 +35,7 @@ class DrawingRequestController extends Controller
             'customers' => Customer::active()->orderBy('name')->get(['id', 'name', 'code']),
             'projects' => Project::active()->with('customer:id,name')->orderBy('name')->get(['id', 'name', 'project_number', 'customer_id']),
             'users' => User::where('active', true)->orderBy('name')->get(['id', 'name', 'role']),
+            'drawingTypes' => DrawingRequestFormRequest::DRAWING_TYPES,
             'preselected_project_id' => request('project_id'),
         ]);
     }
@@ -73,6 +74,7 @@ class DrawingRequestController extends Controller
             'customers' => Customer::active()->orderBy('name')->get(['id', 'name', 'code']),
             'projects' => Project::active()->with('customer:id,name')->orderBy('name')->get(['id', 'name', 'project_number', 'customer_id']),
             'users' => User::where('active', true)->orderBy('name')->get(['id', 'name', 'role']),
+            'drawingTypes' => DrawingRequestFormRequest::DRAWING_TYPES,
         ]);
     }
 

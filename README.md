@@ -142,9 +142,17 @@ npm run build
 ### Default Credentials
 
 ```
-Email: admin@drawingflow.test
+Email: mark@drawingflow.local
+Email: detailer@drawingflow.local
 Password: password
 ```
+
+### File Upload Limits
+
+- Project attachments are enabled on both create and edit forms.
+- Maximum file size: `30MB` per file.
+- Maximum request body size is configured higher at the container level to support multi-file uploads.
+- If you change upload limits, rebuild/restart containers so PHP and Nginx pick up the new settings.
 
 ---
 
@@ -153,9 +161,7 @@ Password: password
 ### For Developers
 
 - **[AGENTS.md](AGENTS.md)** - Comprehensive AI agent guide with database schema, workflows, and development patterns
-- **[INSTALLATION.md](docs/INSTALLATION.md)** - Detailed setup instructions for various environments
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute to DrawingFlow
-- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** - Community guidelines
+- **README.md** - Local setup, workflow, and feature overview
 
 ### API Documentation
 
@@ -176,11 +182,11 @@ Coming soon - full REST API documentation with Postman collections.
 
 ### 📋 Phase 1: Core Workflow (Weeks 3-4)
 - [ ] Drawing request CRUD
-- [ ] Drawing submittal CRUD with file upload
+- [x] Drawing submittal CRUD with file upload
 - [ ] Basic status system
 - [ ] Customer & project associations
 - [ ] Simple list views
-- [ ] File attachment system
+- [x] File attachment system
 
 ### 🧠 Phase 2: Workflow Intelligence (Weeks 5-6)
 - [ ] Auto-status transitions based on approval type
@@ -212,7 +218,7 @@ Coming soon - full REST API documentation with Postman collections.
 ### 🏭 Phase 5: Fab Handoff (Weeks 11-12)
 - [ ] Fab queue management
 - [ ] Material requirements field
-- [ ] CNC file attachment
+- [x] CNC file attachment
 - [ ] Priority system
 - [ ] Shop floor tablet view
 - [ ] Bulk handoff tools

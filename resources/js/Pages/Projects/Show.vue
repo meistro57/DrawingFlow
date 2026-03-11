@@ -1,4 +1,5 @@
 <script setup>
+import { ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
@@ -6,11 +7,45 @@ import StatusBadge from '@/Components/StatusBadge.vue';
 const props = defineProps({
     project: Object,
 });
+const selectedPdfAttachmentId = ref(null);
+
+const selectedPdfAttachment = computed(() =>
+    props.project.attachments?.find((attachment) => attachment.id === selectedPdfAttachmentId.value)
+);
+
+const selectedPdfViewerUrl = computed(() =>
+    selectedPdfAttachmentId.value
+        ? route('projects.attachments.view', [props.project.id, selectedPdfAttachmentId.value])
+        : null
+);
 
 function deleteProject() {
     if (confirm(`Are you sure you want to delete "${props.project.name}"?`)) {
         router.delete(route('projects.destroy', props.project.id));
     }
+}
+
+function openPdfViewer(attachmentId) {
+    selectedPdfAttachmentId.value = attachmentId;
+}
+
+function closePdfViewer() {
+    selectedPdfAttachmentId.value = null;
+}
+
+function isPdfAttachment(attachment) {
+    return attachment.mime_type === 'application/pdf'
+        || attachment.original_filename.toLowerCase().endsWith('.pdf');
+}
+
+function formatFileSize(sizeInBytes) {
+    const size = Number(sizeInBytes ?? 0);
+
+    if (size >= 1048576) {
+        return `${(size / 1048576).toFixed(2)} MB`;
+    }
+
+    return `${Math.max(1, Math.round(size / 1024))} KB`;
 }
 </script>
 
@@ -114,6 +149,70 @@ function deleteProject() {
                                 <dd class="text-sm font-semibold text-gray-900">{{ project.fab_queue_entries_count }}</dd>
                             </div>
                         </dl>
+                    </div>
+                </div>
+
+                <!-- Attachments -->
+                <div class="mt-8 bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-medium text-gray-900">Project Attachments</h2>
+                    </div>
+                    <div v-if="project.attachments?.length" class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">File</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded By</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr v-for="attachment in project.attachments" :key="attachment.id">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ attachment.original_filename }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ attachment.mime_type || '-' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatFileSize(attachment.file_size) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ attachment.uploaded_by?.name || '-' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                                        <button
+                                            v-if="isPdfAttachment(attachment)"
+                                            type="button"
+                                            class="text-primary-600 hover:text-primary-800"
+                                            @click="openPdfViewer(attachment.id)"
+                                        >
+                                            View PDF
+                                        </button>
+                                        <Link
+                                            :href="route('projects.attachments.download', [project.id, attachment.id])"
+                                            class="text-primary-600 hover:text-primary-800"
+                                        >
+                                            Download
+                                        </Link>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div v-else class="px-6 py-8 text-center text-sm text-gray-500">
+                        No attachments uploaded for this project yet.
+                    </div>
+                </div>
+
+                <div v-if="selectedPdfViewerUrl" class="mt-8 bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                        <h2 class="text-lg font-medium text-gray-900">
+                            PDF Viewer
+                            <span v-if="selectedPdfAttachment" class="text-sm text-gray-500 font-normal">
+                                - {{ selectedPdfAttachment.original_filename }}
+                            </span>
+                        </h2>
+                        <button type="button" class="text-sm text-gray-600 hover:text-gray-800" @click="closePdfViewer">
+                            Close Viewer
+                        </button>
+                    </div>
+                    <div class="h-[70vh]">
+                        <iframe :src="selectedPdfViewerUrl" title="Project PDF Viewer" class="h-full w-full" />
                     </div>
                 </div>
 

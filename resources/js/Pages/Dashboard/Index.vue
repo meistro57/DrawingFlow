@@ -58,12 +58,20 @@ const statCards = computed(() => [
                             Overview of your drawing workflow pipeline.
                         </p>
                     </div>
-                    <Link
-                        :href="route('drawing-requests.create')"
-                        class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition"
-                    >
-                        New Request
-                    </Link>
+                    <div class="flex items-center gap-3">
+                        <Link
+                            :href="route('projects.create')"
+                            class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50 transition"
+                        >
+                            New Project
+                        </Link>
+                        <Link
+                            :href="route('drawing-requests.create')"
+                            class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition"
+                        >
+                            New Request
+                        </Link>
+                    </div>
                 </div>
 
                 <!-- Stats Grid -->

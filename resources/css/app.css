@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -20,4 +21,62 @@
     --color-primary-700: #1d4ed8;
     --color-primary-800: #1e40af;
     --color-primary-900: #1e3a8a;
+}
+
+@layer utilities {
+    .dark .bg-white {
+        background-color: rgb(24 24 27) !important;
+    }
+
+    .dark .bg-gray-50 {
+        background-color: rgb(39 39 42) !important;
+    }
+
+    .dark .hover\:bg-gray-50:hover {
+        background-color: rgb(39 39 42) !important;
+    }
+
+    .dark .border-gray-200 {
+        border-color: rgb(63 63 70) !important;
+    }
+
+    .dark .border-gray-300 {
+        border-color: rgb(82 82 91) !important;
+    }
+
+    .dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+        border-color: rgb(63 63 70) !important;
+    }
+
+    .dark .text-gray-900 {
+        color: rgb(244 244 245) !important;
+    }
+
+    .dark .text-gray-700 {
+        color: rgb(228 228 231) !important;
+    }
+
+    .dark .text-gray-600 {
+        color: rgb(212 212 216) !important;
+    }
+
+    .dark .text-gray-500 {
+        color: rgb(161 161 170) !important;
+    }
+}
+
+@layer base {
+    input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']),
+    select,
+    textarea {
+        background-color: rgb(249 250 251) !important;
+    }
+
+    .dark input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='color']),
+    .dark select,
+    .dark textarea {
+        background-color: rgb(39 39 42) !important;
+        color: rgb(244 244 245) !important;
+        border-color: rgb(82 82 91) !important;
+    }
 }

@@ -29,6 +29,8 @@ class ProjectRequest extends FormRequest
             'target_completion_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'status' => ['required', Rule::in(['active', 'on_hold', 'completed', 'cancelled'])],
             'notes' => ['nullable', 'string'],
+            'attachments' => ['nullable', 'array', 'max:10'],
+            'attachments.*' => ['file', 'max:30720', 'mimes:pdf,dwg,dxf,png,jpg,jpeg,doc,docx,xls,xlsx,csv,txt'],
         ];
     }
 }
