@@ -136,6 +136,7 @@ npm run build
 ### Access the Application
 
 - **Web Interface**: http://localhost:8080
+- **LAN Access**: http://`<your-machine-lan-ip>`:8080
 - **Mailhog (Email Testing)**: http://localhost:8025
 - **Horizon (Queue Dashboard)**: http://localhost:8080/horizon
 
@@ -153,6 +154,15 @@ Password: password
 - Maximum file size: `30MB` per file.
 - Maximum request body size is configured higher at the container level to support multi-file uploads.
 - If you change upload limits, rebuild/restart containers so PHP and Nginx pick up the new settings.
+
+### Current Highlights
+
+- Admin user management is available in the app.
+- Customer CSV import is available from the customers index.
+- Project create/edit supports multi-file attachments.
+- Project attachments include inline PDF viewing and download actions.
+- Dashboard now includes a `My Queue` workload view with quick request filters.
+- Nginx is configured to answer on LAN IPs, not just `localhost`.
 
 ---
 
@@ -175,17 +185,17 @@ Coming soon - full REST API documentation with Postman collections.
 - [x] GitHub repository setup
 - [x] Comprehensive documentation (AGENTS.md)
 - [ ] Extract customer/project models from SteelFlow
-- [ ] Docker development environment
-- [ ] Initial database migrations
-- [ ] Authentication system
-- [ ] Dashboard skeleton
+- [x] Docker development environment
+- [x] Initial database migrations
+- [x] Authentication system
+- [x] Dashboard skeleton
 
 ### 📋 Phase 1: Core Workflow (Weeks 3-4)
-- [ ] Drawing request CRUD
+- [x] Drawing request CRUD
 - [x] Drawing submittal CRUD with file upload
 - [ ] Basic status system
-- [ ] Customer & project associations
-- [ ] Simple list views
+- [x] Customer & project associations
+- [x] Simple list views
 - [x] File attachment system
 
 ### 🧠 Phase 2: Workflow Intelligence (Weeks 5-6)
@@ -195,10 +205,10 @@ Coming soon - full REST API documentation with Postman collections.
 - [ ] Status history timeline
 - [ ] Notes/comments system
 - [ ] Email notifications
-- [ ] Dashboard with "My Queue" view
+- [x] Dashboard with "My Queue" view
 
 ### 📄 Phase 3: PDF Magic (Weeks 7-8)
-- [ ] Embedded PDF viewer
+- [x] Embedded PDF viewer
 - [ ] Markup tools (circles, arrows, text, highlights)
 - [ ] Markup save/export
 - [ ] Revision comparison side-by-side
@@ -538,10 +548,10 @@ Because the steel fabrication industry deserves better software. By open-sourcin
 
 ## 📊 Project Status
 
-**Current Phase**: Foundation (Phase 0)  
+**Current Phase**: Core Workflow / Dashboard Iteration  
 **Status**: Active Development  
 **Version**: 0.1.0-alpha  
-**Next Milestone**: Phase 1 - Core Workflow Implementation
+**Next Milestone**: Phase 2 - Workflow Intelligence
 
 ### Recent Activity
 
