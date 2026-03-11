@@ -4,16 +4,26 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "lint": "eslint resources/js --ext .js,.vue --fix",
+        "lint:check": "eslint resources/js --ext .js,.vue",
+        "format": "prettier --write resources/js/**/*.{js,vue}",
+        "format:check": "prettier --check resources/js/**/*.{js,vue}"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.1.18",
         "@vitejs/plugin-vue": "^6.0.4",
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",
+        "eslint": "^9.17.0",
+        "eslint-plugin-vue": "^9.32.0",
+        "@eslint/js": "^9.17.0",
+        "globals": "^15.14.0",
         "laravel-vite-plugin": "^2.0.0",
+        "prettier": "^3.4.2",
         "tailwindcss": "^4.1.18",
-        "vite": "^7.0.7"
+        "vite": "^7.0.7",
+        "vite-plugin-eslint": "^1.8.1"
     },
     "dependencies": {
         "@headlessui/vue": "^1.7.23",

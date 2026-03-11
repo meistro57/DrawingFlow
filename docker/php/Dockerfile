@@ -14,6 +14,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     ghostscript \
+    nodejs \
+    npm \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl \
     && pecl install redis imagick \
     && docker-php-ext-enable redis imagick \
