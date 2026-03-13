@@ -3,536 +3,247 @@
 ## Repository Snapshot
 
 - **Project**: DrawingFlow
-- **Type**: Laravel 12 + Inertia.js (Vue 3) monolith
-- **Runtime**: PHP 8.2+ (`composer.json`), Docker image uses PHP 8.3 (`docker/php/Dockerfile`)
-- **Frontend build**: Vite 7 + Tailwind CSS 4 plugin + Vue plugin
-- **Infra for local dev**: Docker Compose with `app`, `nginx`, `mysql`, `redis`, `meilisearch`, `mailhog`
+- **Type**: Laravel 12 monolith with Inertia.js + Vue 3
+- **Backend**: PHP (`composer.json` requires `^8.2`), Laravel Framework `^12.0`
+- **Frontend**: Vite 7, Vue 3, Inertia Vue 2, Tailwind CSS 4
+- **Dev infra in repo**: Docker Compose services for `app`, `nginx`, `mysql`, `redis`, `meilisearch`, `mailhog`
+- **Current source roots**: `app/`, `resources/js/`, `routes/`, `database/`, `tests/`
 
-This repository is not empty and contains active application source under `app/`, `resources/js/`, `routes/`, and `database/`.
+This repository is **not empty** and contains active application code.
 
 ---
 
-## Rule Files Found
+## Rule Files Found (from requested locations)
 
-Checked for repository-specific agent instruction files:
+Checked these locations:
 
 - `.cursor/rules/*.md` → not found
 - `.cursorrules` → not found
-- `.github/copilot-instructions.md` → not found
+- `.github/copilot-instructions.md` → not found (`.github/` directory not present)
 - `claude.md` → not found
 - `agents.md` (lowercase) → not found
 - `AGENTS.md` (this file) → found
 
-No other agent-rule files are currently present.
+No other rule files were discovered in those requested paths.
 
 ---
 
 ## Essential Commands (Observed)
 
-## Initial setup
+## Composer scripts (`composer.json`)
 
 ```bash
 composer setup
-```
-
-From `composer.json`, this runs:
-1. `composer install`
-2. copy `.env.example` → `.env` if missing
-3. `php artisan key:generate`
-4. `php artisan migrate --force`
-5. `npm install`
-6. `npm run build`
-
-## Local development (without Docker)
-
-```bash
 composer dev
+composer test
+composer lint
+composer lint:fix
+composer analyse
 ```
 
-Starts concurrently:
-- `php artisan serve`
-- `php artisan queue:listen --tries=1 --timeout=0`
-- `php artisan pail --timeout=0`
-- `npm run dev`
+### What they do
 
-## Frontend only
+- `composer setup`
+  - `composer install`
+  - copy `.env.example` to `.env` if missing
+  - `php artisan key:generate`
+  - `php artisan migrate --force`
+  - `npm install`
+  - `npm run build`
+- `composer dev`
+  - runs concurrently: `php artisan serve`, `php artisan queue:listen --tries=1 --timeout=0`, `php artisan pail --timeout=0`, `npm run dev`
+- `composer test`
+  - clears config then runs `php artisan test`
+- `composer lint`
+  - runs Pint in test mode + PHPStan
+- `composer lint:fix`
+  - runs Pint formatter
+- `composer analyse`
+  - runs PHPStan
+
+## Frontend scripts (`package.json`)
 
 ```bash
 npm run dev
 npm run build
+npm run lint
+npm run lint:check
+npm run format
+npm run format:check
 ```
 
-## Test commands
+- ESLint scope: `resources/js/**/*.{js,vue}`
+- Prettier scope: `resources/js/**/*.{js,vue}`
 
-```bash
-composer test
-php artisan test
-php artisan test --testsuite=Feature
-php artisan test --testsuite=Unit
-```
-
-`composer test` clears config first, then runs `php artisan test`.
-
-## Formatting / linting
-
-`laravel/pint` is installed in `require-dev`, so formatter is available via:
-
-```bash
-./vendor/bin/pint
-```
-
-No dedicated npm lint script or CI lint workflow was found.
-
-## Docker workflow
-
-Start services:
+## Docker Compose workflow (`docker-compose.yml`)
 
 ```bash
 docker compose up -d
-```
-
-Main service endpoints from `docker-compose.yml`:
-- App via nginx: `http://localhost:8080`
-- MySQL: `localhost:3306`
-- Redis: `localhost:6379`
-- Meilisearch: `localhost:7700`
-- Mailhog UI: `http://localhost:8025`
-
-If using Docker for app commands:
-
-```bash
+docker compose down
+docker compose exec app composer install
 docker compose exec app php artisan migrate
 docker compose exec app php artisan test
-docker compose exec app composer install
 ```
+
+Published ports:
+
+- App (nginx): `http://localhost:8080`
+- MySQL: `3306`
+- Redis: `6379`
+- Meilisearch: `7700`
+- Mailhog UI: `http://localhost:8025`
+
+## Helper script
+
+`start-and-test.sh` exists and:
+
+- brings containers down/up
+- waits for MySQL
+- runs migrations
+- runs **Unit** test suite (`php artisan test --testsuite=Unit`)
 
 ---
 
-## Code Organization
+## Project Structure
 
 ## Backend
 
-- `app/Models/` — Eloquent models for workflow entities:
-  - `DrawingRequest`, `DrawingSubmittal`, `FabQueue`, `SubmittalApproval`, `SubmittalFile`, `PdfMarkup`, `Customer`, `Project`, `CustomerWorkflow`, `User`
-- `app/Services/` — business workflow logic:
-  - `DrawingRequestService`, `SubmittalService`, `FabHandoffService`
-- `app/Http/Controllers/` — Inertia-backed controllers + auth controllers
-- `app/Http/Requests/` — form request validation classes
-- `routes/web.php` — all web routes (guest auth + authenticated app routes)
-- `app/Providers/AppServiceProvider.php` — explicit route model bindings for:
-  - `submittal` → `DrawingSubmittal`
-  - `fab_queue` → `FabQueue`
+- `app/Http/Controllers/`
+  - Inertia controllers and auth/admin/profile controllers
+- `app/Http/Requests/`
+  - Form Requests, including nested folders like `Profile/` and `Admin/`
+- `app/Models/`
+  - Domain models: `DrawingRequest`, `DrawingSubmittal`, `FabQueue`, `ProjectAttachment`, etc.
+- `app/Services/`
+  - Business logic services (`DrawingRequestService`, `SubmittalService`, `FabHandoffService`, etc.)
+- `app/Providers/AppServiceProvider.php`
+  - explicit route-model bindings for `submittal` and `fab_queue`
+  - `Gate::define('admin-access', ...)`
 
 ## Frontend
 
-- `resources/js/app.js` bootstraps Inertia + Vue + Pinia + Ziggy
-- `resources/js/Pages/**` contains page components by domain
-- `resources/js/Components/**` shared UI pieces (`StatusBadge`, `Pagination`, etc.)
-- `resources/js/Layouts/AppLayout.vue` contains navigation + flash message rendering
-- Alias `@` points to `/resources/js` (`vite.config.js`)
+- `resources/js/app.js`
+  - bootstraps Inertia app, Pinia, ZiggyVue, and page resolution via `import.meta.glob`
+- `resources/js/Layouts/`
+  - app shell + guest shell
+- `resources/js/Pages/`
+  - feature pages grouped by domain (Dashboard, DrawingRequests, Submittals, FabQueue, Projects, Customers, Admin, Profile, Auth)
+- `resources/js/Components/`
+  - shared UI components (e.g., `StatusBadge`, `Pagination`, `Modal`, `EmptyState`, `PdfMarkupWorkspace`)
+
+## Routing
+
+- `routes/web.php` has all web routes (guest + auth + admin route group)
+- Uses named routes throughout; admin routes are under `admin.` prefix
 
 ## Data layer
 
-- `database/migrations/` has Laravel default migrations plus domain migrations
-- `database/seeders/DatabaseSeeder.php` seeds:
-  - admin + detailer users
-  - sample customers/projects
-  - customer workflow records
+- `database/migrations/` contains Laravel defaults + workflow domain tables + profile/avatar + notifications + submittal notes migrations
+- `database/seeders/DatabaseSeeder.php` seeds two users and sample customers/projects/workflows
+- `database/factories/` includes `UserFactory` and `SubmittalNoteFactory`
+
+## Tests
+
+- `tests/Feature/` includes coverage for profile management, dashboard queue behavior, customer import/filtering, request validation, project attachments, admin user management, notification center, submittal notes, and PDF markup workflows
+- `tests/Unit/` currently minimal (`ExampleTest`)
+- `phpunit.xml` uses in-memory sqlite for tests
 
 ---
 
-## Conventions and Patterns Observed
+## Coding Patterns Observed
 
-## Architecture style
+## Laravel / backend patterns
 
-- Controllers are thin and delegate domain actions to services.
-- Services use `DB::transaction()` for multi-step state changes.
-- Models define:
-  - relationships
-  - query scopes (for status/active filtering)
-  - helper methods (`isApproved()`, `statusLabel` accessors, etc.)
+- Controllers are generally thin and delegate workflow actions to services.
+- Multi-step business operations use `DB::transaction()` inside services (`app/Services/*.php`).
+- Form Requests are used for validation (example: `app/Http/Requests/DrawingRequestFormRequest.php`).
+- Models frequently include:
+  - typed relationship methods
+  - query scopes (e.g., `scopeStatus`, `scopePriority`, `queued`, `active`)
+  - helper/accessor methods (`getStatusLabelAttribute`, `isApproved`, `avatarUrl`)
+- Casts are defined via `casts()` methods rather than `$casts` property in multiple models.
 
-## Naming and status patterns
+## Inertia / Vue patterns
 
-- Request numbering in `DrawingRequestService`: `DR-YYYY-####`
-- Submittal numbering in `SubmittalService`: `SUB-YYYY-####`
-- Fab queue numbering in `FabHandoffService`: `FAB-YYYY-####`
-
-Core status enums are persisted in migrations and used throughout model helpers/UI badges.
-
-## UI patterns
-
-- Inertia pages receive server-side props directly from controller `Inertia::render(...)` calls.
-- `HandleInertiaRequests` shares global props:
-  - `auth.user`
+- Vue SFCs use `<script setup>` + Composition API.
+- Page components receive props directly from controller `Inertia::render(...)` payloads.
+- `HandleInertiaRequests` shares:
+  - `auth.user` (flattened useful fields, including `notification_unread_count`)
   - `ziggy`
   - `flash.success` / `flash.error`
-- Vue SFCs use `<script setup>` and Composition API style.
+- Layout-driven pages (`<AppLayout>`) are standard for authenticated screens.
 
-## Formatting rules
+## Naming/status patterns
 
-From `.editorconfig`:
-- 4-space indentation by default
-- LF line endings
-- UTF-8
-- final newline required
-- Markdown allows trailing whitespace (common for intentional line breaks)
-- YAML uses 2-space indentation
+- Drawing request numbers: `DR-YYYY-####`
+- Submittal numbers: `SUB-YYYY-####`
+- Fab queue numbers: `FAB-YYYY-####`
+- Status strings are snake_case and domain-specific (examples: `ready_to_submit`, `approved_as_noted`, `revise_and_resubmit`, `field_verify_required`).
 
 ---
 
-## Testing State and Expectations
+## Style & Tooling Conventions
 
-- `phpunit.xml` defines `Unit` and `Feature` suites.
-- Testing environment uses:
-  - `APP_ENV=testing`
-  - in-memory SQLite (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`)
-  - sync queue / array session / array cache
-- Current repository test coverage is minimal (example tests only):
-  - `tests/Feature/ExampleTest.php`
-  - `tests/Unit/ExampleTest.php`
+From observed config files:
 
-When adding features, prefer adding focused Feature and/or Unit tests near changed behavior.
+- `.editorconfig`
+  - default: 4 spaces, LF, UTF-8, final newline
+  - JS/Vue: 2 spaces
+  - YAML: 2 spaces
+- `.prettierrc`
+  - single quotes, semicolons, trailing commas (`es5`), print width 100
+- `eslint.config.js`
+  - Flat config
+  - JS recommended + Vue recommended rules
+  - `vue/multi-word-component-names` disabled
+
+---
+
+## Testing Conventions Observed
+
+- PHPUnit class-based tests (`Tests\Feature\...`, `Tests\Unit\...`).
+- Feature tests commonly use `RefreshDatabase`.
+- Inertia responses are asserted with `Inertia\Testing\AssertableInertia`.
+- Mix of factory usage and direct `Model::create()` in feature tests.
+- Profile/file tests use `Storage::fake('public')` + `UploadedFile::fake()`.
+
+Useful commands:
+
+```bash
+php artisan test
+php artisan test --testsuite=Feature
+php artisan test --testsuite=Unit
+php artisan test tests/Feature/Profile/ProfileManagementTest.php
+```
 
 ---
 
 ## Important Gotchas (Observed)
 
-1. **README credential mismatch**
-   - README lists `admin@drawingflow.test`.
-   - Actual seeded users in `DatabaseSeeder.php` are:
-     - `mark@drawingflow.local` / `password`
-     - `detailer@drawingflow.local` / `password`
+1. **Rule-file discovery paths are mostly absent**
+   - The specific requested agent rule file locations are not present (except `AGENTS.md`).
 
-2. **Validation vs schema mismatch for `drawing_type`**
-   - DB migration requires enum value on `drawing_requests.drawing_type`.
-   - `DrawingRequestFormRequest` currently allows `drawing_type` as nullable string.
-   - This can cause DB-level failure if omitted/invalid.
+2. **README contains mixed command styles**
+   - Most README Docker commands use `docker compose`, but the Testing section still shows `docker-compose` examples.
 
-3. **No CI workflows found**
-   - `.github/workflows/` was not present.
-   - Do not assume automated checks run remotely.
+3. **README stack text does not fully match package versions**
+   - README references Tailwind CSS 3 in the badge/stack section, while `package.json` has Tailwind CSS 4.
 
-4. **Docker networking assumptions in `.env.example`**
-   - DB/Redis hosts are service names (`mysql`, `redis`), appropriate for Docker network.
-   - Running app fully outside Docker may require different host values.
+4. **No CI workflows in repository**
+   - `.github/workflows/` is not present; do not assume automated remote checks.
 
-5. **Compose command style in repository**
-   - Recent git history indicates migration from `docker-compose` to `docker compose`.
-   - Prefer `docker compose` for new docs/commands.
+5. **Route model binding is explicit for non-standard parameter names**
+   - `submittal` and `fab_queue` bindings are registered in `app/Providers/AppServiceProvider.php`; preserve parameter names in routes/controllers.
 
 ---
 
-## Agent Working Notes for This Repo
-
-- Start by checking whether work belongs in a **Service** before putting logic in a controller/model.
-- Preserve existing status vocabulary exactly (`approved_as_noted`, `revise_and_resubmit`, etc.).
-- Keep Inertia page naming consistent with controller render paths (e.g. `DrawingRequests/Index`).
-- If adding routes using `{submittal}` or `{fab_queue}`, remember explicit route model bindings already exist in `AppServiceProvider`.
-- Run tests after changes; baseline test command is `composer test`.
-
-===
-
-<laravel-boost-guidelines>
-=== foundation rules ===
-
-# Laravel Boost Guidelines
-
-The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to ensure the best experience when building Laravel applications.
-
-## Foundational Context
-
-This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
-
-- php - 8.4.17
-- inertiajs/inertia-laravel (INERTIA_LARAVEL) - v2
-- laravel/ai (AI) - v0
-- laravel/framework (LARAVEL) - v12
-- laravel/mcp (MCP) - v0
-- laravel/prompts (PROMPTS) - v0
-- tightenco/ziggy (ZIGGY) - v2
-- laravel/boost (BOOST) - v2
-- laravel/pail (PAIL) - v1
-- laravel/pint (PINT) - v1
-- laravel/sail (SAIL) - v1
-- phpunit/phpunit (PHPUNIT) - v11
-- @inertiajs/vue3 (INERTIA_VUE) - v2
-- vue (VUE) - v3
-- eslint (ESLINT) - v9
-- prettier (PRETTIER) - v3
-- tailwindcss (TAILWINDCSS) - v4
-
-## Skills Activation
-
-This project has domain-specific skills available. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
-
-- `mcp-development` — Use this skill for Laravel MCP development only. Trigger when creating or editing MCP tools, resources, prompts, or servers in Laravel projects. Covers: artisan make:mcp-* generators, mcp:inspector, routes/ai.php, Tool/Resource/Prompt classes, schema validation, shouldRegister(), OAuth setup, URI templates, read-only attributes, and MCP debugging. Do not use for non-Laravel MCP projects or generic AI features without MCP.
-- `inertia-vue-development` — Develops Inertia.js v2 Vue client-side applications. Activates when creating Vue pages, forms, or navigation; using &lt;Link&gt;, &lt;Form&gt;, useForm, or router; working with deferred props, prefetching, or polling; or when user mentions Vue with Inertia, Vue pages, Vue forms, or Vue navigation.
-- `tailwindcss-development` — Styles applications using Tailwind CSS v4 utilities. Activates when adding styles, restyling components, working with gradients, spacing, layout, flex, grid, responsive design, dark mode, colors, typography, or borders; or when the user mentions CSS, styling, classes, Tailwind, restyle, hero section, cards, buttons, or any visual/UI changes.
-- `laravel-best-practices` — Laravel 12 conventions and best practices. Use when creating controllers, models, migrations, validation, services, or structuring Laravel applications. Triggers on tasks involving Laravel architecture, Eloquent, database, API development, or PHP patterns.
-- `laravel-inertia-react` — Laravel + Inertia.js + React integration patterns. Use when building Inertia page components, handling forms with useForm, managing shared data, or implementing persistent layouts. Triggers on tasks involving Inertia.js, page props, form handling, or Laravel React integration.
-- `laravel-specialist` — Build and configure Laravel 10+ applications, including creating Eloquent models and relationships, implementing Sanctum authentication, configuring Horizon queues, designing RESTful APIs with API resources, and building reactive interfaces with Livewire. Use when creating Laravel models, setting up queue workers, implementing Sanctum auth flows, building Livewire components, optimising Eloquent queries, or writing Pest/PHPUnit tests for Laravel features.
-- `php-mcp-server-generator` — Generate a complete PHP Model Context Protocol server project with tools, resources, prompts, and tests using the official PHP SDK
-
-## Conventions
-
-- You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
-- Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
-- Check for existing components to reuse before writing a new one.
-
-## Verification Scripts
-
-- Do not create verification scripts or tinker when tests cover that functionality and prove they work. Unit and feature tests are more important.
-
-## Application Structure & Architecture
-
-- Stick to existing directory structure; don't create new base folders without approval.
-- Do not change the application's dependencies without approval.
-
-## Frontend Bundling
-
-- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `vendor/bin/sail npm run build`, `vendor/bin/sail npm run dev`, or `vendor/bin/sail composer run dev`. Ask them.
-
-## Documentation Files
-
-- You must only create documentation files if explicitly requested by the user.
-
-## Replies
-
-- Be concise in your explanations - focus on what's important rather than explaining obvious details.
-
-=== boost rules ===
-
-# Laravel Boost
-
-- Laravel Boost is an MCP server that comes with powerful tools designed specifically for this application. Use them.
-
-## Artisan
-
-- Use the `list-artisan-commands` tool when you need to call an Artisan command to double-check the available parameters.
-
-## URLs
-
-- Whenever you share a project URL with the user, you should use the `get-absolute-url` tool to ensure you're using the correct scheme, domain/IP, and port.
-
-## Tinker / Debugging
-
-- You should use the `tinker` tool when you need to execute PHP to debug code or query Eloquent models directly.
-- Use the `database-query` tool when you only need to read from the database.
-- Use the `database-schema` tool to inspect table structure before writing migrations or models.
-
-## Reading Browser Logs With the `browser-logs` Tool
-
-- You can read browser logs, errors, and exceptions using the `browser-logs` tool from Boost.
-- Only recent browser logs will be useful - ignore old logs.
-
-## Searching Documentation (Critically Important)
-
-- Boost comes with a powerful `search-docs` tool you should use before trying other approaches when working with Laravel or Laravel ecosystem packages. This tool automatically passes a list of installed packages and their versions to the remote Boost API, so it returns only version-specific documentation for the user's circumstance. You should pass an array of packages to filter on if you know you need docs for particular packages.
-- Search the documentation before making code changes to ensure we are taking the correct approach.
-- Use multiple, broad, simple, topic-based queries at once. For example: `['rate limiting', 'routing rate limiting', 'routing']`. The most relevant results will be returned first.
-- Do not add package names to queries; package information is already shared. For example, use `test resource table`, not `filament 4 test resource table`.
-
-### Available Search Syntax
-
-1. Simple Word Searches with auto-stemming - query=authentication - finds 'authenticate' and 'auth'.
-2. Multiple Words (AND Logic) - query=rate limit - finds knowledge containing both "rate" AND "limit".
-3. Quoted Phrases (Exact Position) - query="infinite scroll" - words must be adjacent and in that order.
-4. Mixed Queries - query=middleware "rate limit" - "middleware" AND exact phrase "rate limit".
-5. Multiple Queries - queries=["authentication", "middleware"] - ANY of these terms.
-
-=== php rules ===
-
-# PHP
-
-- Always use curly braces for control structures, even for single-line bodies.
-
-## Constructors
-
-- Use PHP 8 constructor property promotion in `__construct()`.
-    - `public function __construct(public GitHub $github) { }`
-- Do not allow empty `__construct()` methods with zero parameters unless the constructor is private.
-
-## Type Declarations
-
-- Always use explicit return type declarations for methods and functions.
-- Use appropriate PHP type hints for method parameters.
-
-<!-- Explicit Return Types and Method Params -->
-```php
-protected function isAccessible(User $user, ?string $path = null): bool
-{
-    ...
-}
-```
-
-## Enums
-
-- Typically, keys in an Enum should be TitleCase. For example: `FavoritePerson`, `BestLake`, `Monthly`.
-
-## Comments
-
-- Prefer PHPDoc blocks over inline comments. Never use comments within the code itself unless the logic is exceptionally complex.
-
-## PHPDoc Blocks
-
-- Add useful array shape type definitions when appropriate.
-
-=== sail rules ===
-
-# Laravel Sail
-
-- This project runs inside Laravel Sail's Docker containers. You MUST execute all commands through Sail.
-- Start services using `vendor/bin/sail up -d` and stop them with `vendor/bin/sail stop`.
-- Open the application in the browser by running `vendor/bin/sail open`.
-- Always prefix PHP, Artisan, Composer, and Node commands with `vendor/bin/sail`. Examples:
-    - Run Artisan Commands: `vendor/bin/sail artisan migrate`
-    - Install Composer packages: `vendor/bin/sail composer install`
-    - Execute Node commands: `vendor/bin/sail npm run dev`
-    - Execute PHP scripts: `vendor/bin/sail php [script]`
-- View all available Sail commands by running `vendor/bin/sail` without arguments.
-
-=== inertia-laravel/core rules ===
-
-# Inertia
-
-- Inertia creates fully client-side rendered SPAs without modern SPA complexity, leveraging existing server-side patterns.
-- Components live in `resources/js/Pages` (unless specified in `vite.config.js`). Use `Inertia::render()` for server-side routing instead of Blade views.
-- ALWAYS use `search-docs` tool for version-specific Inertia documentation and updated code examples.
-- IMPORTANT: Activate `inertia-vue-development` when working with Inertia Vue client-side patterns.
-
-# Inertia v2
-
-- Use all Inertia features from v1 and v2. Check the documentation before making changes to ensure the correct approach.
-- New features: deferred props, infinite scrolling (merging props + `WhenVisible`), lazy loading on scroll, polling, prefetching.
-- When using deferred props, add an empty state with a pulsing or animated skeleton.
-
-=== laravel/core rules ===
-
-# Do Things the Laravel Way
-
-- Use `vendor/bin/sail artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using the `list-artisan-commands` tool.
-- If you're creating a generic PHP class, use `vendor/bin/sail artisan make:class`.
-- Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
-
-## Database
-
-- Always use proper Eloquent relationship methods with return type hints. Prefer relationship methods over raw queries or manual joins.
-- Use Eloquent models and relationships before suggesting raw database queries.
-- Avoid `DB::`; prefer `Model::query()`. Generate code that leverages Laravel's ORM capabilities rather than bypassing them.
-- Generate code that prevents N+1 query problems by using eager loading.
-- Use Laravel's query builder for very complex database operations.
-
-### Model Creation
-
-- When creating new models, create useful factories and seeders for them too. Ask the user if they need any other things, using `list-artisan-commands` to check the available options to `vendor/bin/sail artisan make:model`.
-
-### APIs & Eloquent Resources
-
-- For APIs, default to using Eloquent API Resources and API versioning unless existing API routes do not, then you should follow existing application convention.
-
-## Controllers & Validation
-
-- Always create Form Request classes for validation rather than inline validation in controllers. Include both validation rules and custom error messages.
-- Check sibling Form Requests to see if the application uses array or string based validation rules.
-
-## Authentication & Authorization
-
-- Use Laravel's built-in authentication and authorization features (gates, policies, Sanctum, etc.).
-
-## URL Generation
-
-- When generating links to other pages, prefer named routes and the `route()` function.
-
-## Queues
-
-- Use queued jobs for time-consuming operations with the `ShouldQueue` interface.
-
-## Configuration
-
-- Use environment variables only in configuration files - never use the `env()` function directly outside of config files. Always use `config('app.name')`, not `env('APP_NAME')`.
-
-## Testing
-
-- When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
-- Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
-- When creating tests, make use of `vendor/bin/sail artisan make:test [options] {name}` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
-
-## Vite Error
-
-- If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `vendor/bin/sail npm run build` or ask the user to run `vendor/bin/sail npm run dev` or `vendor/bin/sail composer run dev`.
-
-=== laravel/v12 rules ===
-
-# Laravel 12
-
-- CRITICAL: ALWAYS use `search-docs` tool for version-specific Laravel documentation and updated code examples.
-- Since Laravel 11, Laravel has a new streamlined file structure which this project uses.
-
-## Laravel 12 Structure
-
-- In Laravel 12, middleware are no longer registered in `app/Http/Kernel.php`.
-- Middleware are configured declaratively in `bootstrap/app.php` using `Application::configure()->withMiddleware()`.
-- `bootstrap/app.php` is the file to register middleware, exceptions, and routing files.
-- `bootstrap/providers.php` contains application specific service providers.
-- The `app\Console\Kernel.php` file no longer exists; use `bootstrap/app.php` or `routes/console.php` for console configuration.
-- Console commands in `app/Console/Commands/` are automatically available and do not require manual registration.
-
-## Database
-
-- When modifying a column, the migration must include all of the attributes that were previously defined on the column. Otherwise, they will be dropped and lost.
-- Laravel 12 allows limiting eagerly loaded records natively, without external packages: `$query->latest()->limit(10);`.
-
-### Models
-
-- Casts can and likely should be set in a `casts()` method on a model rather than the `$casts` property. Follow existing conventions from other models.
-
-=== mcp/core rules ===
-
-# Laravel MCP
-
-- Laravel MCP allows you to rapidly build MCP servers for your Laravel applications.
-- IMPORTANT: laravel/mcp is very new. Always use the `search-docs` tool for authoritative documentation on writing and testing Laravel MCP servers, tools, resources, and prompts.
-- IMPORTANT: Activate `mcp-development` every time you're working with an MCP-related task.
-
-=== pint/core rules ===
-
-# Laravel Pint Code Formatter
-
-- If you have modified any PHP files, you must run `vendor/bin/sail bin pint --dirty --format agent` before finalizing changes to ensure your code matches the project's expected style.
-- Do not run `vendor/bin/sail bin pint --test --format agent`, simply run `vendor/bin/sail bin pint --format agent` to fix any formatting issues.
-
-=== phpunit/core rules ===
-
-# PHPUnit
-
-- This application uses PHPUnit for testing. All tests must be written as PHPUnit classes. Use `vendor/bin/sail artisan make:test --phpunit {name}` to create a new test.
-- If you see a test using "Pest", convert it to PHPUnit.
-- Every time a test has been updated, run that singular test.
-- When the tests relating to your feature are passing, ask the user if they would like to also run the entire test suite to make sure everything is still passing.
-- Tests should cover all happy paths, failure paths, and edge cases.
-- You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files; these are core to the application.
-
-## Running Tests
-
-- Run the minimal number of tests, using an appropriate filter, before finalizing.
-- To run all tests: `vendor/bin/sail artisan test --compact`.
-- To run all tests in a file: `vendor/bin/sail artisan test --compact tests/Feature/ExampleTest.php`.
-- To filter on a particular test name: `vendor/bin/sail artisan test --compact --filter=testName` (recommended after making a change to a related file).
-
-=== inertia-vue/core rules ===
-
-# Inertia + Vue
-
-Vue components must have a single root element.
-- IMPORTANT: Activate `inertia-vue-development` when working with Inertia Vue client-side patterns.
-
-=== tailwindcss/core rules ===
-
-# Tailwind CSS
-
-- Always use existing Tailwind conventions; check project patterns before adding new ones.
-- IMPORTANT: Always use `search-docs` tool for version-specific Tailwind CSS documentation and updated code examples. Never rely on training data.
-- IMPORTANT: Activate `tailwindcss-development` every time you're working with a Tailwind CSS or styling-related task.
-
-</laravel-boost-guidelines>
+## Practical Agent Notes for This Repo
+
+- Prefer adding workflow logic to `app/Services` when it changes business state across models.
+- Keep controller responses Inertia-first and return named route redirects with flash messages.
+- Reuse existing domain status vocabulary exactly; many UI badges and dashboard filters depend on it.
+- When adding dashboard queue logic, maintain `queue_filter` whitelist handling in `app/Http/Controllers/DashboardController.php`.
+- For profile/avatar behavior, keep storage disk usage consistent with `public` disk and existing `avatar_path` conventions.
+- Notification dropdown polls `/notifications`; keep payload shape from `NotificationController` stable for layout consumers.
+- Submittal collaboration uses `submittal_notes`; prefer `submittal->submittalNotes()->with('user')` for page hydration.
+- Validate route parameter naming against `routes/web.php` + `AppServiceProvider` before refactors.

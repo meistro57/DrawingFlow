@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\DrawingRequest;
 use App\Models\DrawingSubmittal;
+use App\Models\User;
+use App\Notifications\SubmittalApprovalRecorded;
 use App\Services\FabHandoffService;
 use App\Services\SubmittalService;
 use Illuminate\Http\RedirectResponse;
@@ -36,7 +38,9 @@ class SubmittalController extends Controller
             'customer',
             'submittedBy',
             'drawingRequest',
+            'files' => fn ($q) => $q->with('uploadedBy:id,name')->latest(),
             'approvals' => fn ($q) => $q->with('createdBy')->latest(),
+            'submittalNotes' => fn ($q) => $q->with('user:id,name')->latest(),
             'fabQueueEntry.assignedTo',
         ]);
 
@@ -76,10 +80,32 @@ class SubmittalController extends Controller
 
         $this->service->processApproval($submittal, $validated['approval_type'], $validated);
 
+        $submittal->refresh()->loadMissing(['drawingRequest.assignedTo', 'submittedBy']);
+
         // Auto-create fab queue entry if approved
         if (in_array($validated['approval_type'], ['approved', 'approved_as_noted'])) {
-            $submittal->refresh();
             $this->fabService->createFabQueueEntry($submittal);
+        }
+
+        $recipientIds = collect([
+            $submittal->submitted_by_user_id,
+            $submittal->drawingRequest?->assigned_to_user_id,
+        ])
+            ->filter()
+            ->unique()
+            ->reject(fn ($userId) => (int) $userId === (int) auth()->id())
+            ->values();
+
+        if ($recipientIds->isNotEmpty()) {
+            $recipients = User::query()->whereIn('id', $recipientIds)->get();
+
+            foreach ($recipients as $recipient) {
+                $recipient->notify(new SubmittalApprovalRecorded(
+                    $submittal,
+                    $validated['approval_type'],
+                    auth()->user()->name,
+                ));
+            }
         }
 
         return back()->with('success', 'Approval processed successfully.');

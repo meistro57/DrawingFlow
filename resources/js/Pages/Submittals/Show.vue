@@ -4,12 +4,19 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
 import Modal from '@/Components/Modal.vue';
+import PdfMarkupWorkspace from '@/Components/PdfMarkupWorkspace.vue';
 
 const props = defineProps({
     submittal: Object,
 });
 
 const showApprovalModal = ref(false);
+const submittalNotes = ref(props.submittal.submittal_notes ?? []);
+const noteForm = ref({
+    message: '',
+});
+const isSavingNote = ref(false);
+const noteError = ref('');
 const approvalForm = ref({
     approval_type: '',
     reviewer_name: '',
@@ -53,6 +60,38 @@ function deleteSubmittal() {
     if (confirm('Delete this submittal? This cannot be undone.')) {
         router.delete(route('submittals.destroy', props.submittal.id));
     }
+}
+
+async function submitNote() {
+    const message = noteForm.value.message.trim();
+
+    if (!message) {
+        return;
+    }
+
+    isSavingNote.value = true;
+    noteError.value = '';
+
+    try {
+        const response = await window.axios.post(route('submittals.notes.store', props.submittal.id), {
+            message,
+        });
+
+        submittalNotes.value = [response.data.data, ...submittalNotes.value];
+        noteForm.value.message = '';
+    } catch {
+        noteError.value = 'Could not save note. Try again.';
+    } finally {
+        isSavingNote.value = false;
+    }
+}
+
+function formatNoteTimestamp(value) {
+    if (!value) {
+        return '';
+    }
+
+    return new Date(value).toLocaleString();
 }
 
 const approvalTypeLabels = {
@@ -165,6 +204,46 @@ const approvalTypeLabels = {
                                     <dd class="text-sm text-gray-900 col-span-2 whitespace-pre-line">{{ submittal.notes }}</dd>
                                 </div>
                             </dl>
+                        </div>
+
+                        <PdfMarkupWorkspace :submittal-id="submittal.id" :files="submittal.files || []" />
+
+                        <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h2 class="text-lg font-medium text-gray-900">Internal Notes</h2>
+                            </div>
+                            <div class="px-6 py-4 border-b border-gray-200 space-y-3">
+                                <textarea
+                                    v-model="noteForm.message"
+                                    rows="3"
+                                    class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                    placeholder="Add a note for the drawing team..."
+                                />
+                                <div class="flex items-center justify-between">
+                                    <p v-if="noteError" class="text-sm text-red-600">{{ noteError }}</p>
+                                    <span v-else class="text-xs text-gray-500">Visible to internal users only.</span>
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center px-3 py-2 bg-primary-600 border border-transparent rounded-md text-xs font-semibold text-white hover:bg-primary-700 transition uppercase tracking-widest disabled:opacity-50"
+                                        :disabled="isSavingNote || !noteForm.message.trim()"
+                                        @click="submitNote"
+                                    >
+                                        {{ isSavingNote ? 'Saving...' : 'Add Note' }}
+                                    </button>
+                                </div>
+                            </div>
+                            <div v-if="submittalNotes.length" class="divide-y divide-gray-200">
+                                <div v-for="note in submittalNotes" :key="note.id" class="px-6 py-4">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-sm font-medium text-gray-900">{{ note.user?.name || 'Unknown' }}</p>
+                                        <p class="text-xs text-gray-500">{{ formatNoteTimestamp(note.created_at) }}</p>
+                                    </div>
+                                    <p class="mt-2 text-sm text-gray-700 whitespace-pre-line">{{ note.message }}</p>
+                                </div>
+                            </div>
+                            <div v-else class="px-6 py-8 text-center text-sm text-gray-500">
+                                No internal notes yet.
+                            </div>
                         </div>
 
                         <!-- Approval History -->

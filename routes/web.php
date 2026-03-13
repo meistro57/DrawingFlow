@@ -7,9 +7,14 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DrawingRequestController;
 use App\Http\Controllers\FabQueueController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectAttachmentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SubmittalController;
+use App\Http\Controllers\SubmittalFileController;
+use App\Http\Controllers\SubmittalNoteController;
+use App\Http\Controllers\SubmittalPdfMarkupController;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes
@@ -27,6 +32,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 
     // Customers
     Route::resource('customers', CustomerController::class);
@@ -52,6 +63,13 @@ Route::middleware('auth')->group(function () {
     Route::post('submittals/{submittal}/submit', [SubmittalController::class, 'submit'])->name('submittals.submit');
     Route::post('submittals/{submittal}/process-approval', [SubmittalController::class, 'processApproval'])->name('submittals.process-approval');
     Route::post('submittals/{submittal}/create-revision', [SubmittalController::class, 'createRevision'])->name('submittals.create-revision');
+    Route::get('submittals/{submittal}/files/{submittalFile}/view', [SubmittalFileController::class, 'view'])->name('submittals.files.view');
+    Route::get('submittals/{submittal}/files/{submittalFile}/download', [SubmittalFileController::class, 'download'])->name('submittals.files.download');
+    Route::get('submittals/{submittal}/files/{submittalFile}/markups', [SubmittalPdfMarkupController::class, 'index'])->name('submittals.files.markups.index');
+    Route::post('submittals/{submittal}/files/{submittalFile}/markups', [SubmittalPdfMarkupController::class, 'store'])->name('submittals.files.markups.store');
+    Route::get('submittals/{submittal}/files/{submittalFile}/markups/export', [SubmittalPdfMarkupController::class, 'export'])->name('submittals.files.markups.export');
+    Route::get('submittals/{submittal}/notes', [SubmittalNoteController::class, 'index'])->name('submittals.notes.index');
+    Route::post('submittals/{submittal}/notes', [SubmittalNoteController::class, 'store'])->name('submittals.notes.store');
 
     // Fab Queue
     Route::get('fab-queue', [FabQueueController::class, 'index'])->name('fab-queue.index');

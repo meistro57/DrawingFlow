@@ -77,6 +77,11 @@ class DrawingSubmittal extends Model
         return $this->hasMany(SubmittalApproval::class, 'submittal_id');
     }
 
+    public function submittalNotes(): HasMany
+    {
+        return $this->hasMany(SubmittalNote::class, 'submittal_id');
+    }
+
     public function latestApproval(): HasOne
     {
         return $this->hasOne(SubmittalApproval::class, 'submittal_id')->latestOfMany();
