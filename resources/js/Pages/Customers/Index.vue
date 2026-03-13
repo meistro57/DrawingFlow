@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
@@ -19,6 +19,133 @@ const filterForm = reactive({
     status: props.filters?.status ?? 'all',
     sort: props.filters?.sort ?? 'latest',
 });
+const localTableForm = reactive({
+    quickSearch: '',
+    status: 'all',
+    contact: 'all',
+    activity: 'all',
+    density: 'comfortable',
+});
+const sortState = ref({
+    key: 'name',
+    direction: 'asc',
+});
+
+const customerRows = computed(() => props.customers?.data ?? []);
+const pageStats = computed(() => {
+    const total = customerRows.value.length;
+    const active = customerRows.value.filter((customer) => customer.active).length;
+    const withEmail = customerRows.value.filter((customer) => customer.email).length;
+
+    return {
+        total,
+        active,
+        inactive: total - active,
+        withEmail,
+    };
+});
+const rowSpacingClass = computed(() => {
+    if (localTableForm.density === 'compact') {
+        return 'px-4 py-2';
+    }
+
+    if (localTableForm.density === 'spacious') {
+        return 'px-6 py-5';
+    }
+
+    return 'px-5 py-3';
+});
+const displayedCustomers = computed(() => {
+    const quickSearch = localTableForm.quickSearch.trim().toLowerCase();
+
+    const filtered = customerRows.value.filter((customer) => {
+        if (localTableForm.status === 'active' && !customer.active) {
+            return false;
+        }
+
+        if (localTableForm.status === 'inactive' && customer.active) {
+            return false;
+        }
+
+        if (localTableForm.contact === 'has_email' && !customer.email) {
+            return false;
+        }
+
+        if (localTableForm.contact === 'missing_email' && customer.email) {
+            return false;
+        }
+
+        const activityTotal = (customer.projects_count ?? 0) + (customer.drawing_requests_count ?? 0);
+
+        if (localTableForm.activity === 'high' && activityTotal < 10) {
+            return false;
+        }
+
+        if (localTableForm.activity === 'medium' && (activityTotal < 4 || activityTotal > 9)) {
+            return false;
+        }
+
+        if (localTableForm.activity === 'low' && activityTotal > 3) {
+            return false;
+        }
+
+        if (quickSearch === '') {
+            return true;
+        }
+
+        return [customer.name, customer.code, customer.email ?? '']
+            .join(' ')
+            .toLowerCase()
+            .includes(quickSearch);
+    });
+
+    const multiplier = sortState.value.direction === 'asc' ? 1 : -1;
+
+    return [...filtered].sort((left, right) => {
+        const leftValue = sortValue(left, sortState.value.key);
+        const rightValue = sortValue(right, sortState.value.key);
+
+        if (typeof leftValue === 'number' && typeof rightValue === 'number') {
+            return (leftValue - rightValue) * multiplier;
+        }
+
+        return String(leftValue).localeCompare(String(rightValue)) * multiplier;
+    });
+});
+
+function sortValue(customer, key) {
+    if (key === 'projects_count') {
+        return customer.projects_count ?? 0;
+    }
+
+    if (key === 'drawing_requests_count') {
+        return customer.drawing_requests_count ?? 0;
+    }
+
+    if (key === 'active') {
+        return customer.active ? 1 : 0;
+    }
+
+    return customer[key] ?? '';
+}
+
+function toggleSort(key) {
+    if (sortState.value.key === key) {
+        sortState.value.direction = sortState.value.direction === 'asc' ? 'desc' : 'asc';
+        return;
+    }
+
+    sortState.value.key = key;
+    sortState.value.direction = 'asc';
+}
+
+function sortIndicator(key) {
+    if (sortState.value.key !== key) {
+        return '↕';
+    }
+
+    return sortState.value.direction === 'asc' ? '↑' : '↓';
+}
 
 function deleteCustomer(customer) {
     if (confirm(`Are you sure you want to delete "${customer.name}"?`)) {
@@ -61,6 +188,27 @@ function resetFilters() {
     filterForm.sort = 'latest';
     applyFilters();
 }
+
+function resetQuickFilters() {
+    localTableForm.quickSearch = '';
+    localTableForm.status = 'all';
+    localTableForm.contact = 'all';
+    localTableForm.activity = 'all';
+}
+
+function activityLabel(customer) {
+    const total = (customer.projects_count ?? 0) + (customer.drawing_requests_count ?? 0);
+
+    if (total >= 10) {
+        return 'High';
+    }
+
+    if (total >= 4) {
+        return 'Medium';
+    }
+
+    return 'Low';
+}
 </script>
 
 <template>
@@ -69,20 +217,39 @@ function resetFilters() {
 
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between mb-6">
+                <div class="mb-6 flex items-center justify-between">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">Customers</h1>
-                        <p class="mt-1 text-sm text-gray-500">Manage your customer accounts.</p>
+                        <p class="mt-1 text-sm text-gray-500">Manage customer accounts with rich table controls.</p>
                     </div>
                     <Link
                         :href="route('customers.create')"
-                        class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition"
+                        class="inline-flex items-center px-4 py-2 rounded-md border border-transparent bg-primary-600 font-semibold text-xs uppercase tracking-widest text-white transition hover:bg-primary-700"
                     >
                         Add Customer
                     </Link>
                 </div>
 
-                <form @submit.prevent="importCustomers" class="mb-6 bg-white shadow-sm rounded-lg border border-gray-200 p-4">
+                <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                    <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                        <p class="text-xs uppercase tracking-wider text-gray-500">On This Page</p>
+                        <p class="mt-2 text-2xl font-semibold text-gray-900">{{ pageStats.total }}</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                        <p class="text-xs uppercase tracking-wider text-gray-500">Active</p>
+                        <p class="mt-2 text-2xl font-semibold text-emerald-700">{{ pageStats.active }}</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                        <p class="text-xs uppercase tracking-wider text-gray-500">Inactive</p>
+                        <p class="mt-2 text-2xl font-semibold text-amber-700">{{ pageStats.inactive }}</p>
+                    </div>
+                    <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                        <p class="text-xs uppercase tracking-wider text-gray-500">With Email</p>
+                        <p class="mt-2 text-2xl font-semibold text-gray-900">{{ pageStats.withEmail }}</p>
+                    </div>
+                </div>
+
+                <form @submit.prevent="importCustomers" class="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                         <div class="flex-1">
                             <label class="block text-sm font-medium text-gray-700">Import Customers (.csv)</label>
@@ -101,7 +268,7 @@ function resetFilters() {
                             <button
                                 type="submit"
                                 :disabled="importForm.processing || !importForm.file"
-                                class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition disabled:opacity-50"
+                                class="inline-flex items-center rounded-md border border-transparent bg-primary-600 px-4 py-2 font-semibold text-xs uppercase tracking-widest text-white transition hover:bg-primary-700 disabled:opacity-50"
                             >
                                 Import CSV
                             </button>
@@ -109,10 +276,10 @@ function resetFilters() {
                     </div>
                 </form>
 
-                <form @submit.prevent="applyFilters" class="mb-6 bg-white shadow-sm rounded-lg border border-gray-200 p-4">
+                <form @submit.prevent="applyFilters" class="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Search</label>
+                            <label class="block text-sm font-medium text-gray-700">Server Search</label>
                             <input
                                 v-model="filterForm.search"
                                 type="text"
@@ -121,10 +288,10 @@ function resetFilters() {
                             >
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Status</label>
+                            <label class="block text-sm font-medium text-gray-700">Server Status</label>
                             <select
                                 v-model="filterForm.status"
-                                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                 @change="applyFilters"
                             >
                                 <option value="all">All</option>
@@ -133,10 +300,10 @@ function resetFilters() {
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Sort</label>
+                            <label class="block text-sm font-medium text-gray-700">Server Sort</label>
                             <select
                                 v-model="filterForm.sort"
-                                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                 @change="applyFilters"
                             >
                                 <option value="latest">Newest First</option>
@@ -150,13 +317,13 @@ function resetFilters() {
                         <div class="flex items-end gap-2">
                             <button
                                 type="submit"
-                                class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition"
+                                class="inline-flex items-center rounded-md border border-transparent bg-primary-600 px-4 py-2 font-semibold text-xs uppercase tracking-widest text-white transition hover:bg-primary-700"
                             >
                                 Apply
                             </button>
                             <button
                                 type="button"
-                                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest bg-white hover:bg-gray-50 transition"
+                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-semibold text-xs uppercase tracking-widest text-gray-700 transition hover:bg-gray-50"
                                 @click="resetFilters"
                             >
                                 Reset
@@ -165,40 +332,167 @@ function resetFilters() {
                     </div>
                 </form>
 
-                <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-                    <table v-if="customers.data.length" class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Projects</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requests</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="customer in customers.data" :key="customer.id" class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    <Link :href="route('customers.show', customer.id)" class="text-primary-600 hover:text-primary-800">
-                                        {{ customer.code }}
-                                    </Link>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ customer.name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ customer.email || '-' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ customer.projects_count }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ customer.drawing_requests_count }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <StatusBadge :status="customer.active ? 'active' : 'on_hold'" />
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                    <Link :href="route('customers.edit', customer.id)" class="text-primary-600 hover:text-primary-800">Edit</Link>
-                                    <button @click="deleteCustomer(customer)" class="text-red-600 hover:text-red-800">Delete</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Quick Table Search</label>
+                            <input
+                                v-model="localTableForm.quickSearch"
+                                type="text"
+                                placeholder="Filter current page instantly"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Contact</label>
+                            <select
+                                v-model="localTableForm.contact"
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                            >
+                                <option value="all">All</option>
+                                <option value="has_email">Has Email</option>
+                                <option value="missing_email">Missing Email</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Activity</label>
+                            <select
+                                v-model="localTableForm.activity"
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                            >
+                                <option value="all">All</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Density</label>
+                            <select
+                                v-model="localTableForm.density"
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                            >
+                                <option value="compact">Compact</option>
+                                <option value="comfortable">Comfortable</option>
+                                <option value="spacious">Spacious</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-700 hover:bg-gray-50"
+                            @click="localTableForm.status = 'all'"
+                        >
+                            All
+                        </button>
+                        <button
+                            type="button"
+                            class="inline-flex items-center rounded-md border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider"
+                            :class="localTableForm.status === 'active' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'"
+                            @click="localTableForm.status = 'active'"
+                        >
+                            Active Only
+                        </button>
+                        <button
+                            type="button"
+                            class="inline-flex items-center rounded-md border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider"
+                            :class="localTableForm.status === 'inactive' ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'"
+                            @click="localTableForm.status = 'inactive'"
+                        >
+                            Inactive Only
+                        </button>
+                        <button
+                            type="button"
+                            class="ml-auto inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-700 hover:bg-gray-50"
+                            @click="resetQuickFilters"
+                        >
+                            Reset Quick Filters
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+                    <div v-if="customers.data.length" class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                                        <button type="button" class="inline-flex items-center gap-1" @click="toggleSort('name')">
+                                            Customer
+                                            <span class="text-gray-400">{{ sortIndicator('name') }}</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                                        <button type="button" class="inline-flex items-center gap-1" @click="toggleSort('projects_count')">
+                                            Projects
+                                            <span class="text-gray-400">{{ sortIndicator('projects_count') }}</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                                        <button type="button" class="inline-flex items-center gap-1" @click="toggleSort('drawing_requests_count')">
+                                            Requests
+                                            <span class="text-gray-400">{{ sortIndicator('drawing_requests_count') }}</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                                        <button type="button" class="inline-flex items-center gap-1" @click="toggleSort('active')">
+                                            Status
+                                            <span class="text-gray-400">{{ sortIndicator('active') }}</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Activity</th>
+                                    <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                <tr v-for="customer in displayedCustomers" :key="customer.id" class="transition hover:bg-gray-50">
+                                    <td :class="rowSpacingClass">
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <Link :href="route('customers.show', customer.id)" class="text-sm font-semibold text-primary-600 hover:text-primary-800">
+                                                    {{ customer.name }}
+                                                </Link>
+                                                <span class="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                                                    {{ customer.code }}
+                                                </span>
+                                            </div>
+                                            <p class="text-xs text-gray-500">{{ customer.email || 'No email on file' }}</p>
+                                        </div>
+                                    </td>
+                                    <td :class="`${rowSpacingClass} whitespace-nowrap text-sm text-gray-600`">{{ customer.projects_count }}</td>
+                                    <td :class="`${rowSpacingClass} whitespace-nowrap text-sm text-gray-600`">{{ customer.drawing_requests_count }}</td>
+                                    <td :class="`${rowSpacingClass} whitespace-nowrap`">
+                                        <StatusBadge :status="customer.active ? 'active' : 'on_hold'" />
+                                    </td>
+                                    <td :class="`${rowSpacingClass} whitespace-nowrap`">
+                                        <span
+                                            class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                                            :class="{
+                                                'bg-emerald-100 text-emerald-700': activityLabel(customer) === 'High',
+                                                'bg-amber-100 text-amber-700': activityLabel(customer) === 'Medium',
+                                                'bg-gray-100 text-gray-700': activityLabel(customer) === 'Low'
+                                            }"
+                                        >
+                                            {{ activityLabel(customer) }}
+                                        </span>
+                                    </td>
+                                    <td :class="`${rowSpacingClass} whitespace-nowrap text-right text-sm font-medium`">
+                                        <div class="inline-flex items-center gap-3">
+                                            <Link :href="route('customers.edit', customer.id)" class="text-primary-600 hover:text-primary-800">Edit</Link>
+                                            <button @click="deleteCustomer(customer)" class="text-red-600 hover:text-red-800">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-if="displayedCustomers.length === 0">
+                                    <td colspan="6" class="px-5 py-8 text-center text-sm text-gray-500">
+                                        No rows match the current quick filters.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <EmptyState
                         v-else
                         title="No customers yet"
@@ -207,7 +501,7 @@ function resetFilters() {
                         <template #action>
                             <Link
                                 :href="route('customers.create')"
-                                class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition"
+                                class="inline-flex items-center rounded-md border border-transparent bg-primary-600 px-4 py-2 font-semibold text-xs uppercase tracking-widest text-white transition hover:bg-primary-700"
                             >
                                 Add Customer
                             </Link>

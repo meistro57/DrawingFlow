@@ -2,7 +2,7 @@
 </script>
 
 <template>
-    <div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
+    <div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-100">
         <div class="sm:mx-auto sm:w-full sm:max-w-md">
             <h1 class="text-center text-3xl font-bold text-primary-600">DrawingFlow</h1>
             <p class="mt-2 text-center text-sm text-gray-600">

@@ -10,6 +10,7 @@ const props = defineProps({
 
 const forms = reactive({});
 const savingByUser = reactive({});
+const deletingByUser = reactive({});
 const createForm = useForm({
     name: '',
     email: '',
@@ -23,8 +24,13 @@ const createForm = useForm({
 function getForm(user) {
     if (!forms[user.id]) {
         forms[user.id] = {
+            name: user.name,
+            email: user.email,
             role: user.role,
+            title: user.title ?? '',
             active: Boolean(user.active),
+            password: '',
+            password_confirmation: '',
         };
     }
 
@@ -37,6 +43,10 @@ function updateUser(user) {
 
     router.put(route('admin.users.update', user.id), form, {
         preserveScroll: true,
+        onSuccess: () => {
+            form.password = '';
+            form.password_confirmation = '';
+        },
         onFinish: () => {
             savingByUser[user.id] = false;
         },
@@ -50,6 +60,21 @@ function createUser() {
             createForm.reset('name', 'email', 'title', 'password', 'password_confirmation');
             createForm.role = 'detailer';
             createForm.active = true;
+        },
+    });
+}
+
+function deleteUser(user) {
+    if (!window.confirm(`Delete ${user.name}? This cannot be undone.`)) {
+        return;
+    }
+
+    deletingByUser[user.id] = true;
+
+    router.delete(route('admin.users.destroy', user.id), {
+        preserveScroll: true,
+        onFinish: () => {
+            deletingByUser[user.id] = false;
         },
     });
 }
@@ -154,17 +179,29 @@ function createUser() {
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name / Email</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Title</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Password</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Active</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 bg-white">
                                 <tr v-for="user in users.data" :key="user.id">
                                     <td class="px-4 py-3">
-                                        <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
-                                        <p class="text-xs text-gray-500">{{ user.email }}</p>
+                                        <div class="space-y-2">
+                                            <input
+                                                v-model="getForm(user).name"
+                                                type="text"
+                                                class="block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                            >
+                                            <input
+                                                v-model="getForm(user).email"
+                                                type="email"
+                                                class="block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                            >
+                                        </div>
                                     </td>
                                     <td class="px-4 py-3">
                                         <select
@@ -177,6 +214,29 @@ function createUser() {
                                         </select>
                                     </td>
                                     <td class="px-4 py-3">
+                                        <input
+                                            v-model="getForm(user).title"
+                                            type="text"
+                                            class="block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                        >
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="space-y-2">
+                                            <input
+                                                v-model="getForm(user).password"
+                                                type="password"
+                                                placeholder="New password"
+                                                class="block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                            >
+                                            <input
+                                                v-model="getForm(user).password_confirmation"
+                                                type="password"
+                                                placeholder="Confirm password"
+                                                class="block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                            >
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
                                         <label class="inline-flex items-center gap-2 text-sm text-gray-700">
                                             <input
                                                 v-model="getForm(user).active"
@@ -187,14 +247,24 @@ function createUser() {
                                         </label>
                                     </td>
                                     <td class="px-4 py-3">
-                                        <button
-                                            type="button"
-                                            :disabled="savingByUser[user.id]"
-                                            class="inline-flex items-center px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
-                                            @click="updateUser(user)"
-                                        >
-                                            Save
-                                        </button>
+                                        <div class="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                :disabled="savingByUser[user.id] || deletingByUser[user.id]"
+                                                class="inline-flex items-center px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                                                @click="updateUser(user)"
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                type="button"
+                                                :disabled="savingByUser[user.id] || deletingByUser[user.id]"
+                                                class="inline-flex items-center px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                                                @click="deleteUser(user)"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>

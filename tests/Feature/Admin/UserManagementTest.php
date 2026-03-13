@@ -46,14 +46,20 @@ class UserManagementTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
+            'name' => 'Updated Detailer',
+            'email' => 'updated.detailer@drawingflow.local',
             'role' => 'manager',
+            'title' => 'Senior Detailer',
             'active' => false,
         ]);
 
         $response->assertRedirect();
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
+            'name' => 'Updated Detailer',
+            'email' => 'updated.detailer@drawingflow.local',
             'role' => 'manager',
+            'title' => 'Senior Detailer',
             'active' => 0,
         ]);
     }
@@ -93,7 +99,10 @@ class UserManagementTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)->put(route('admin.users.update', $admin), [
+            'name' => $admin->name,
+            'email' => $admin->email,
             'role' => 'admin',
+            'title' => $admin->title,
             'active' => false,
         ]);
 
@@ -101,6 +110,65 @@ class UserManagementTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $admin->id,
             'active' => 1,
+        ]);
+    }
+
+    public function test_admin_can_update_user_password(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'active' => true,
+        ]);
+        $user = User::factory()->create([
+            'role' => 'detailer',
+            'active' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'title' => $user->title,
+            'active' => true,
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertTrue(password_verify('Password123!', $user->fresh()->password));
+    }
+
+    public function test_admin_can_delete_a_user(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'active' => true,
+        ]);
+        $user = User::factory()->create([
+            'role' => 'detailer',
+            'active' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->delete(route('admin.users.destroy', $user));
+
+        $response->assertRedirect();
+        $this->assertDatabaseMissing('users', [
+            'id' => $user->id,
+        ]);
+    }
+
+    public function test_admin_cannot_delete_own_account(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'active' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->delete(route('admin.users.destroy', $admin));
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('users', [
+            'id' => $admin->id,
         ]);
     }
 
@@ -123,6 +191,22 @@ class UserManagementTest extends TestCase
         $response->assertForbidden();
         $this->assertDatabaseMissing('users', [
             'email' => 'blocked@drawingflow.local',
+        ]);
+    }
+
+    public function test_non_admin_user_cannot_delete_users(): void
+    {
+        $detailer = User::factory()->create([
+            'role' => 'detailer',
+            'active' => true,
+        ]);
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($detailer)->delete(route('admin.users.destroy', $user));
+
+        $response->assertForbidden();
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
         ]);
     }
 }

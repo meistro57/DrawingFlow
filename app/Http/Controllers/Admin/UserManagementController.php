@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreManagedUserRequest;
 use App\Http\Requests\Admin\UpdateUserManagementRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,8 +37,25 @@ class UserManagementController extends Controller
             return back()->with('error', 'You cannot deactivate your own account.');
         }
 
-        $user->update($request->validated());
+        $validated = $request->validated();
+
+        if (! $request->filled('password')) {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
 
         return back()->with('success', "Updated {$user->name} successfully.");
+    }
+
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        if ($request->user()?->is($user)) {
+            return back()->with('error', 'You cannot delete your own account.');
+        }
+
+        $user->delete();
+
+        return back()->with('success', 'User deleted successfully.');
     }
 }

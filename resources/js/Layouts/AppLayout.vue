@@ -141,7 +141,7 @@ watch(theme, (nextTheme) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100 dark:bg-slate-950">
+    <div class="min-h-screen bg-gray-200 dark:bg-slate-950">
         <!-- Navigation -->
         <nav class="bg-white border-b border-gray-200 dark:bg-slate-900 dark:border-slate-800">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
