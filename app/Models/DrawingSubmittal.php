@@ -30,6 +30,16 @@ class DrawingSubmittal extends Model
         'next_action',
         'notes',
         'internal_notes',
+        'source_modified_at',
+        'source_modified_by',
+        'source_created_by',
+        'source_status',
+        'returned_status',
+        'sent_to_customer',
+        'model_link',
+        'source_image',
+        'mark_to_continue',
+        'import_source',
     ];
 
     protected function casts(): array
@@ -37,6 +47,9 @@ class DrawingSubmittal extends Model
         return [
             'submitted_at' => 'datetime',
             'approval_received_at' => 'datetime',
+            'source_modified_at' => 'datetime',
+            'sent_to_customer' => 'boolean',
+            'mark_to_continue' => 'boolean',
         ];
     }
 

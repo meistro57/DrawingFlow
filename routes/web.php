@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DataBackupController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -84,5 +85,10 @@ Route::middleware('auth')->group(function () {
         Route::post('users', [UserManagementController::class, 'store'])->name('users.store');
         Route::put('users/{user}', [UserManagementController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+
+        Route::get('backups', [DataBackupController::class, 'index'])->name('backups.index');
+        Route::post('backups', [DataBackupController::class, 'store'])->name('backups.store');
+        Route::post('backups/restore', [DataBackupController::class, 'restore'])->name('backups.restore');
+        Route::get('backups/{fileName}', [DataBackupController::class, 'download'])->name('backups.download');
     });
 });

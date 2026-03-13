@@ -88,6 +88,20 @@ docker compose exec app php artisan test --testsuite=Unit
 docker compose exec app php artisan test tests/Feature/Profile/ProfileManagementTest.php
 ```
 
+## Data Import and Backup
+
+```bash
+docker compose exec app php artisan data:import-legacy-csv
+```
+
+The importer reads:
+
+- `Shop Drawing Request.csv`
+- `Drawing Submittal Log.csv`
+- `Fabrication Drawing Log.csv`
+
+Admin users can create, restore, and download JSON backups from the **Admin > Data Backup** page.
+
 `phpunit.xml` uses:
 
 - `APP_ENV=testing`
@@ -121,6 +135,9 @@ From `database/seeders/DatabaseSeeder.php`:
 
 ## Recent Feature Updates
 
+- **Admin backup/restore** page is available at `admin.backups.index` for JSON backups, restore upload, and backup download.
+- **Legacy CSV import** command `php artisan data:import-legacy-csv` imports shop drawing requests, submittals, and fabrication queue records from the provided legacy CSV files.
+- **Fab Queue and Submittals tables** now match the richer Customers table UX with quick table filters and density controls.
 - **Phase 3 PDF workspace** on submittals now supports viewer + markups (circle, arrow, text, highlight, stamp).
 - **Markup export** endpoint provides a JSON export for saved markups.
 - **Revision comparison** is available with side-by-side PDF viewing in the submittal workspace.

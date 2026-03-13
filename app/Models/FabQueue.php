@@ -27,6 +27,14 @@ class FabQueue extends Model
         'completed_at',
         'notes',
         'shop_notes',
+        'date_released',
+        'source_created_at',
+        'source_modified_at',
+        'source_modified_by',
+        'source_status',
+        'attachments_count',
+        'model_link',
+        'import_source',
     ];
 
     protected function casts(): array
@@ -37,6 +45,10 @@ class FabQueue extends Model
             'assigned_at' => 'datetime',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
+            'date_released' => 'date',
+            'source_created_at' => 'datetime',
+            'source_modified_at' => 'datetime',
+            'attachments_count' => 'integer',
         ];
     }
 

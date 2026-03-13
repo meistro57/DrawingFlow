@@ -28,6 +28,17 @@ class DrawingRequest extends Model
         'requested_date',
         'status',
         'notes',
+        'source_modified_at',
+        'source_modified_by',
+        'source_created_by',
+        'source_assigned_to',
+        'source_discipline',
+        'source_status',
+        'attachments_count',
+        'pointcloud_link',
+        'job_link',
+        'source_image',
+        'import_source',
     ];
 
     protected function casts(): array
@@ -35,6 +46,8 @@ class DrawingRequest extends Model
         return [
             'required_date' => 'date',
             'requested_date' => 'date',
+            'source_modified_at' => 'datetime',
+            'attachments_count' => 'integer',
         ];
     }
 
