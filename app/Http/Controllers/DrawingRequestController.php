@@ -32,8 +32,8 @@ class DrawingRequestController extends Controller
     public function create(): Response
     {
         return Inertia::render('DrawingRequests/Create', [
-            'customers' => Customer::active()->orderBy('name')->get(['id', 'name', 'code']),
-            'projects' => Project::active()->with('customer:id,name')->orderBy('name')->get(['id', 'name', 'project_number', 'customer_id']),
+            'customers' => $this->customersForForm(),
+            'projects' => $this->projectsForForm(),
             'users' => User::where('active', true)->orderBy('name')->get(['id', 'name', 'role']),
             'drawingTypes' => DrawingRequestFormRequest::DRAWING_TYPES,
             'preselected_project_id' => request('project_id'),
@@ -71,8 +71,8 @@ class DrawingRequestController extends Controller
     {
         return Inertia::render('DrawingRequests/Edit', [
             'drawingRequest' => $drawingRequest,
-            'customers' => Customer::active()->orderBy('name')->get(['id', 'name', 'code']),
-            'projects' => Project::active()->with('customer:id,name')->orderBy('name')->get(['id', 'name', 'project_number', 'customer_id']),
+            'customers' => $this->customersForForm(),
+            'projects' => $this->projectsForForm(),
             'users' => User::where('active', true)->orderBy('name')->get(['id', 'name', 'role']),
             'drawingTypes' => DrawingRequestFormRequest::DRAWING_TYPES,
         ]);
@@ -121,5 +121,20 @@ class DrawingRequestController extends Controller
         $this->service->putOnHold($drawingRequest);
 
         return back()->with('success', 'Drawing request put on hold.');
+    }
+
+    private function customersForForm()
+    {
+        return Customer::active()
+            ->orderBy('name')
+            ->get(['id', 'name', 'code', 'address', 'city', 'state', 'zip', 'country']);
+    }
+
+    private function projectsForForm()
+    {
+        return Project::active()
+            ->with('customer:id,name,code,address,city,state,zip,country')
+            ->orderBy('name')
+            ->get(['id', 'name', 'project_number', 'customer_id', 'address', 'city', 'state', 'zip']);
     }
 }

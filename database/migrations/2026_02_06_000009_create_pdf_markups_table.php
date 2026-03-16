@@ -16,7 +16,8 @@ return new class extends Migration
             $table->integer('page_number');
 
             $table->enum('markup_type', [
-                'circle', 'arrow', 'text', 'highlight', 'stamp', 'dimension',
+                'circle', 'arrow', 'text', 'highlight', 'stamp', 'dimension', 'rectangle', 'cloud',
+                'pen', 'polyline', 'polygon',
             ]);
 
             $table->json('markup_data');

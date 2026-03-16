@@ -68,6 +68,12 @@ Route::middleware('auth')->group(function () {
     Route::get('submittals/{submittal}/files/{submittalFile}/download', [SubmittalFileController::class, 'download'])->name('submittals.files.download');
     Route::get('submittals/{submittal}/files/{submittalFile}/markups', [SubmittalPdfMarkupController::class, 'index'])->name('submittals.files.markups.index');
     Route::post('submittals/{submittal}/files/{submittalFile}/markups', [SubmittalPdfMarkupController::class, 'store'])->name('submittals.files.markups.store');
+    Route::post('submittals/{submittal}/files/{submittalFile}/markups/import', [SubmittalPdfMarkupController::class, 'import'])->name('submittals.files.markups.import');
+    Route::put('submittals/{submittal}/files/{submittalFile}/markups/{markup}', [SubmittalPdfMarkupController::class, 'update'])->name('submittals.files.markups.update');
+    Route::delete('submittals/{submittal}/files/{submittalFile}/markups/{markup}', [SubmittalPdfMarkupController::class, 'destroy'])->name('submittals.files.markups.destroy');
+    Route::get('submittals/{submittal}/files/{submittalFile}/page-scales', [SubmittalPdfMarkupController::class, 'scaleIndex'])->name('submittals.files.page-scales.index');
+    Route::put('submittals/{submittal}/files/{submittalFile}/page-scales/{pageNumber}', [SubmittalPdfMarkupController::class, 'scaleUpsert'])->name('submittals.files.page-scales.upsert');
+    Route::delete('submittals/{submittal}/files/{submittalFile}/page-scales/{pageNumber}', [SubmittalPdfMarkupController::class, 'scaleDestroy'])->name('submittals.files.page-scales.destroy');
     Route::get('submittals/{submittal}/files/{submittalFile}/markups/export', [SubmittalPdfMarkupController::class, 'export'])->name('submittals.files.markups.export');
     Route::get('submittals/{submittal}/notes', [SubmittalNoteController::class, 'index'])->name('submittals.notes.index');
     Route::post('submittals/{submittal}/notes', [SubmittalNoteController::class, 'store'])->name('submittals.notes.store');

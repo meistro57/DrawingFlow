@@ -72,7 +72,7 @@ npm run format
 npm run format:check
 ```
 
-- ESLint scope: `resources/js/**/*.{js,vue}`
+- ESLint scope: `resources/js`
 - Prettier scope: `resources/js/**/*.{js,vue}`
 
 ## Docker Compose workflow (`docker-compose.yml`)
@@ -130,21 +130,25 @@ Published ports:
   - feature pages grouped by domain (Dashboard, DrawingRequests, Submittals, FabQueue, Projects, Customers, Admin, Profile, Auth)
 - `resources/js/Components/`
   - shared UI components (e.g., `StatusBadge`, `Pagination`, `Modal`, `EmptyState`, `PdfMarkupWorkspace`)
+  - `PdfMarkupWorkspace.vue` is now a substantial review surface with compare mode, import/export, delete/update, history filters, layer visibility toggles, per-page scale calibration, on-canvas editing, and path-based markup tools (`pen`, `polyline`, `polygon`)
 
 ## Routing
 
 - `routes/web.php` has all web routes (guest + auth + admin route group)
 - Uses named routes throughout; admin routes are under `admin.` prefix
+- PDF review routes include markup CRUD, markup import/export, and per-page scale CRUD on `submittals/{submittal}/files/{submittalFile}/...`
 
 ## Data layer
 
 - `database/migrations/` contains Laravel defaults + workflow domain tables + profile/avatar + notifications + submittal notes migrations
+- PDF review now also includes `pdf_markups` and `pdf_page_scales` migrations, including later enum-expansion migrations for new markup types
 - `database/seeders/DatabaseSeeder.php` seeds two users and sample customers/projects/workflows
 - `database/factories/` includes `UserFactory` and `SubmittalNoteFactory`
 
 ## Tests
 
 - `tests/Feature/` includes coverage for profile management, dashboard queue behavior, customer import/filtering, request validation, project attachments, admin user management, notification center, submittal notes, and PDF markup workflows
+- `tests/Feature/SubmittalPdfMarkupTest.php` covers PDF file viewing, markup CRUD, import/export, page-scale persistence, and path-based markup validation
 - `tests/Unit/` currently minimal (`ExampleTest`)
 - `phpunit.xml` uses in-memory sqlite for tests
 
@@ -226,14 +230,14 @@ php artisan test tests/Feature/Profile/ProfileManagementTest.php
 2. **README contains mixed command styles**
    - Most README Docker commands use `docker compose`, but the Testing section still shows `docker-compose` examples.
 
-3. **README stack text does not fully match package versions**
-   - README references Tailwind CSS 3 in the badge/stack section, while `package.json` has Tailwind CSS 4.
-
-4. **No CI workflows in repository**
+3. **No CI workflows in repository**
    - `.github/workflows/` is not present; do not assume automated remote checks.
 
-5. **Route model binding is explicit for non-standard parameter names**
+4. **Route model binding is explicit for non-standard parameter names**
    - `submittal` and `fab_queue` bindings are registered in `app/Providers/AppServiceProvider.php`; preserve parameter names in routes/controllers.
+
+5. **Historical enum migrations have been extended over time**
+   - `pdf_markups.markup_type` has follow-up MySQL enum expansion migrations. When adding new markup tools, add a new forward migration instead of relying only on edits to older migrations.
 
 ---
 
@@ -247,3 +251,6 @@ php artisan test tests/Feature/Profile/ProfileManagementTest.php
 - Notification dropdown polls `/notifications`; keep payload shape from `NotificationController` stable for layout consumers.
 - Submittal collaboration uses `submittal_notes`; prefer `submittal->submittalNotes()->with('user')` for page hydration.
 - Validate route parameter naming against `routes/web.php` + `AppServiceProvider` before refactors.
+- For PDF review work, keep frontend tool names aligned with backend `markup_type` validation and MySQL enum migrations (`circle`, `arrow`, `text`, `highlight`, `stamp`, `dimension`, `rectangle`, `cloud`, `pen`, `polyline`, `polygon`).
+- Per-page PDF calibration is persisted separately from markups through `page-scales` routes; measurement features should read page scale by `page_number`, not from individual markup payloads.
+- The current frontend quality gate is `npm run lint:check` using ESLint flat config over `resources/js`; do not reintroduce deprecated `.eslintignore` or `--ext` usage.

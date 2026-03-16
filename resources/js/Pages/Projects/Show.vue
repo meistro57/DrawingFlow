@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
+import { formatDisplayDate } from '@/utils/dateFormatting';
 
 const props = defineProps({
   project: Object,
@@ -129,12 +130,12 @@ function formatFileSize(sizeInBytes) {
               </div>
               <div class="px-6 py-4 grid grid-cols-3 gap-4">
                 <dt class="text-sm font-medium text-gray-500">Start Date</dt>
-                <dd class="text-sm text-gray-900 col-span-2">{{ project.start_date || '-' }}</dd>
+                <dd class="text-sm text-gray-900 col-span-2">{{ formatDisplayDate(project.start_date) }}</dd>
               </div>
               <div class="px-6 py-4 grid grid-cols-3 gap-4">
                 <dt class="text-sm font-medium text-gray-500">Target Completion</dt>
                 <dd class="text-sm text-gray-900 col-span-2">
-                  {{ project.target_completion_date || '-' }}
+                  {{ formatDisplayDate(project.target_completion_date) }}
                 </dd>
               </div>
               <div v-if="project.notes" class="px-6 py-4 grid grid-cols-3 gap-4">

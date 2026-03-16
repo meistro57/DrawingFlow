@@ -112,7 +112,7 @@ Admin users can create, restore, and download JSON backups from the **Admin > Da
 
 From `docker-compose.yml`:
 
-- App (nginx): `http://localhost:8080`
+- App (nginx): `http://localhost`
 - Mailhog UI: `http://localhost:8025`
 - MySQL: `localhost:3306`
 - Redis: `localhost:6379`

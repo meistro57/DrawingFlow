@@ -5,8 +5,8 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "lint": "eslint resources/js --ext .js,.vue --fix",
-        "lint:check": "eslint resources/js --ext .js,.vue",
+        "lint": "eslint resources/js --fix",
+        "lint:check": "eslint resources/js",
         "format": "prettier --write resources/js/**/*.{js,vue}",
         "format:check": "prettier --check resources/js/**/*.{js,vue}"
     },

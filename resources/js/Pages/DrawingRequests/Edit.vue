@@ -1,7 +1,7 @@
 <script setup>
-import { computed } from 'vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { useDrawingRequestAutofill } from './useDrawingRequestAutofill';
 
 const props = defineProps({
     drawingRequest: Object,
@@ -25,19 +25,7 @@ const form = useForm({
     notes: props.drawingRequest.notes || '',
 });
 
-const filteredProjects = computed(() => {
-    if (form.customer_id) {
-        return props.projects.filter(p => p.customer_id == form.customer_id);
-    }
-    return props.projects;
-});
-
-function onProjectChange() {
-    const project = props.projects.find(p => p.id == form.project_id);
-    if (project) {
-        form.customer_id = project.customer_id;
-    }
-}
+const { filteredProjects, onCustomerChange, onProjectChange } = useDrawingRequestAutofill(props, form);
 
 function submit() {
     form.put(route('drawing-requests.update', props.drawingRequest.id));
@@ -66,7 +54,7 @@ function submit() {
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Customer *</label>
-                                <select v-model="form.customer_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                                <select v-model="form.customer_id" @change="onCustomerChange" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
                                     <option value="">Select a customer</option>
                                     <option v-for="customer in customers" :key="customer.id" :value="customer.id">
                                         {{ customer.name }} ({{ customer.code }})

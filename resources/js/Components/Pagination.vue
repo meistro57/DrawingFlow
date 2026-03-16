@@ -34,6 +34,7 @@ defineProps({
                         v-for="(link, index) in links"
                         :key="index"
                         :href="link.url || '#'"
+                        preserve-scroll
                         :class="[
                             link.active ? 'z-10 bg-primary-600 text-white focus-visible:outline-primary-600' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
                             !link.url ? 'pointer-events-none text-gray-400' : '',
@@ -41,9 +42,9 @@ defineProps({
                             index === links.length - 1 ? 'rounded-r-md' : '',
                             'relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20'
                         ]"
-                        v-html="link.label"
-                        preserve-scroll
-                    />
+                    >
+                        <span v-html="link.label" />
+                    </Link>
                 </nav>
             </div>
         </div>

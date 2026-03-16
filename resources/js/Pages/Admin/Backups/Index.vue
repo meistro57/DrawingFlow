@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { formatDisplayDateTime } from '@/utils/dateFormatting';
 
 defineProps({
   backups: Array,
@@ -31,10 +32,6 @@ function submitRestore() {
 function handleFileChange(event) {
   const [file] = event.target.files ?? [];
   restoreForm.backup_file = file ?? null;
-}
-
-function formatDate(value) {
-  return new Date(value).toLocaleString();
 }
 
 function formatSize(size) {
@@ -173,7 +170,7 @@ function formatSize(size) {
                 >
                   <td class="px-5 py-3 text-sm text-gray-700">{{ backup.name }}</td>
                   <td class="px-5 py-3 text-sm text-gray-700">
-                    {{ formatDate(backup.created_at) }}
+                    {{ formatDisplayDateTime(backup.created_at) }}
                   </td>
                   <td class="px-5 py-3 text-sm text-gray-700">{{ formatSize(backup.size) }}</td>
                   <td class="px-5 py-3">

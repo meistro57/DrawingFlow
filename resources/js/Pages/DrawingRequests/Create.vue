@@ -1,7 +1,7 @@
 <script setup>
-import { computed } from 'vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { useDrawingRequestAutofill } from './useDrawingRequestAutofill';
 
 const props = defineProps({
     customers: Array,
@@ -25,27 +25,11 @@ const form = useForm({
     notes: '',
 });
 
-// Auto-fill customer when project is selected
-const filteredProjects = computed(() => {
-    if (form.customer_id) {
-        return props.projects.filter(p => p.customer_id == form.customer_id);
-    }
-    return props.projects;
-});
+const { filteredProjects, autofillFromProject, onCustomerChange, onProjectChange } =
+    useDrawingRequestAutofill(props, form);
 
-function onProjectChange() {
-    const project = props.projects.find(p => p.id == form.project_id);
-    if (project) {
-        form.customer_id = project.customer_id;
-    }
-}
-
-// Initialize customer if project preselected
 if (props.preselected_project_id) {
-    const project = props.projects.find(p => p.id == props.preselected_project_id);
-    if (project) {
-        form.customer_id = project.customer_id;
-    }
+    autofillFromProject(props.preselected_project_id, false);
 }
 
 function submit() {
@@ -75,7 +59,7 @@ function submit() {
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Customer *</label>
-                                <select v-model="form.customer_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                                <select v-model="form.customer_id" @change="onCustomerChange" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
                                     <option value="">Select a customer</option>
                                     <option v-for="customer in customers" :key="customer.id" :value="customer.id">
                                         {{ customer.name }} ({{ customer.code }})

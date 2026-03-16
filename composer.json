@@ -58,13 +58,13 @@
         ],
         "lint": [
             "@php ./vendor/bin/pint --test",
-            "@php ./vendor/bin/phpstan analyse --no-progress"
+            "@php ./vendor/bin/phpstan analyse --no-progress --memory-limit=1G"
         ],
         "lint:fix": [
             "@php ./vendor/bin/pint"
         ],
         "analyse": [
-            "@php ./vendor/bin/phpstan analyse --no-progress"
+            "@php ./vendor/bin/phpstan analyse --no-progress --memory-limit=1G"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

@@ -5,6 +5,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
 import Modal from '@/Components/Modal.vue';
 import PdfMarkupWorkspace from '@/Components/PdfMarkupWorkspace.vue';
+import { formatDisplayDateTime } from '@/utils/dateFormatting';
 
 const props = defineProps({
     submittal: Object,
@@ -87,11 +88,7 @@ async function submitNote() {
 }
 
 function formatNoteTimestamp(value) {
-    if (!value) {
-        return '';
-    }
-
-    return new Date(value).toLocaleString();
+    return formatDisplayDateTime(value, '');
 }
 
 const approvalTypeLabels = {
@@ -187,7 +184,7 @@ const approvalTypeLabels = {
                                 </div>
                                 <div class="px-6 py-4 grid grid-cols-3 gap-4">
                                     <dt class="text-sm font-medium text-gray-500">Submitted At</dt>
-                                    <dd class="text-sm text-gray-900 col-span-2">{{ submittal.submitted_at || 'Not yet submitted' }}</dd>
+                                    <dd class="text-sm text-gray-900 col-span-2">{{ formatDisplayDateTime(submittal.submitted_at, 'Not yet submitted') }}</dd>
                                 </div>
                                 <div v-if="submittal.approval_type" class="px-6 py-4 grid grid-cols-3 gap-4">
                                     <dt class="text-sm font-medium text-gray-500">Approval Type</dt>
@@ -255,7 +252,7 @@ const approvalTypeLabels = {
                                 <div v-for="approval in submittal.approvals" :key="approval.id" class="px-6 py-4">
                                     <div class="flex items-center justify-between mb-2">
                                         <StatusBadge :status="approval.approval_type" />
-                                        <span class="text-xs text-gray-500">{{ approval.approved_at }}</span>
+                                        <span class="text-xs text-gray-500">{{ formatDisplayDateTime(approval.approved_at) }}</span>
                                     </div>
                                     <div class="text-sm text-gray-700">
                                         <p v-if="approval.reviewer_name">

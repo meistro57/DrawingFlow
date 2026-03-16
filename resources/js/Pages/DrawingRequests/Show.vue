@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
 import Modal from '@/Components/Modal.vue';
+import { formatDisplayDate } from '@/utils/dateFormatting';
 
 const props = defineProps({
   drawingRequest: Object,
@@ -197,13 +198,13 @@ const priorityClasses = {
                 <div class="px-6 py-4 grid grid-cols-3 gap-4">
                   <dt class="text-sm font-medium text-gray-500">Required Date</dt>
                   <dd class="text-sm text-gray-900 col-span-2">
-                    {{ drawingRequest.required_date || '-' }}
+                    {{ formatDisplayDate(drawingRequest.required_date) }}
                   </dd>
                 </div>
                 <div class="px-6 py-4 grid grid-cols-3 gap-4">
                   <dt class="text-sm font-medium text-gray-500">Requested Date</dt>
                   <dd class="text-sm text-gray-900 col-span-2">
-                    {{ drawingRequest.requested_date || '-' }}
+                    {{ formatDisplayDate(drawingRequest.requested_date) }}
                   </dd>
                 </div>
                 <div v-if="drawingRequest.notes" class="px-6 py-4 grid grid-cols-3 gap-4">

@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
+import { formatDisplayDate } from '@/utils/dateFormatting';
 
 const props = defineProps({
     stats: Object,
@@ -97,15 +98,7 @@ const queueFilters = computed(() => [
 ]);
 
 function formatDate(value) {
-    if (!value) {
-        return 'No due date';
-    }
-
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    }).format(new Date(value));
+    return formatDisplayDate(value, 'No due date');
 }
 
 function dueState(value) {
@@ -148,6 +141,40 @@ function dueState(value) {
         label: formatDate(value),
         classes: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
     };
+}
+
+function requestCardClasses(request) {
+    const isOverdue = dueState(request.required_date).label.startsWith('Overdue');
+
+    if (isOverdue || request.priority === 'urgent') {
+        return 'border-l-4 border-l-red-500 bg-red-50/70 hover:bg-red-50 dark:border-l-red-400 dark:bg-red-950/20 dark:hover:bg-red-950/30';
+    }
+
+    if (request.priority === 'high') {
+        return 'border-l-4 border-l-amber-500 bg-amber-50/70 hover:bg-amber-50 dark:border-l-amber-400 dark:bg-amber-950/20 dark:hover:bg-amber-950/30';
+    }
+
+    if (request.priority === 'normal') {
+        return 'border-l-4 border-l-blue-400 bg-blue-50/50 hover:bg-blue-50 dark:border-l-blue-400 dark:bg-blue-950/15 dark:hover:bg-blue-950/25';
+    }
+
+    return 'border-l-4 border-l-slate-300 bg-white hover:bg-gray-50 dark:border-l-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800/60';
+}
+
+function priorityBadgeClasses(priority) {
+    if (priority === 'urgent') {
+        return 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';
+    }
+
+    if (priority === 'high') {
+        return 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
+    }
+
+    if (priority === 'normal') {
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300';
+    }
+
+    return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300';
 }
 </script>
 
@@ -267,7 +294,10 @@ function dueState(value) {
                                 v-for="request in my_queue"
                                 :key="request.id"
                                 :href="route('drawing-requests.show', request.id)"
-                                class="block px-6 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800/60"
+                                :class="[
+                                    requestCardClasses(request),
+                                    'block px-6 py-4 transition-colors',
+                                ]"
                             >
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="min-w-0 flex-1">
@@ -288,7 +318,10 @@ function dueState(value) {
                                             </span>
                                         </div>
                                     </div>
-                                    <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                    <span
+                                        class="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide"
+                                        :class="priorityBadgeClasses(request.priority)"
+                                    >
                                         {{ request.priority }}
                                     </span>
                                 </div>

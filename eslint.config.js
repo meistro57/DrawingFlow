@@ -5,8 +5,13 @@ import globals from 'globals';
 /** @type {import('eslint').Linter.Config[]} */
 export default [
     {
-        files: ['resources/js/**/*.js', 'resources/js/**/*.vue'],
+        ignores: ['public/build/**', 'vendor/**'],
+    },
+    {
+        ...js.configs.recommended,
+        files: ['resources/js/**/*.js'],
         languageOptions: {
+            ...js.configs.recommended.languageOptions,
             ecmaVersion: 'latest',
             sourceType: 'module',
             globals: {
@@ -14,13 +19,35 @@ export default [
                 ...globals.node,
             },
         },
-        plugins: {
-            vue: vuePlugin,
+    },
+    ...vuePlugin.configs['flat/recommended'].map((config) => ({
+        ...config,
+        files: ['resources/js/**/*.vue'],
+        languageOptions: {
+            ...config.languageOptions,
+            globals: {
+                ...globals.browser,
+                ...globals.node,
+                ...(config.languageOptions?.globals ?? {}),
+            },
         },
+    })),
+    {
+        files: ['resources/js/**/*.vue'],
         rules: {
-            ...js.configs.recommended.rules,
-            ...vuePlugin.configs['flat/recommended'].rules,
+            'vue/attributes-order': 'off',
+            'vue/first-attribute-linebreak': 'off',
+            'vue/html-closing-bracket-newline': 'off',
+            'vue/html-closing-bracket-spacing': 'off',
+            'vue/html-indent': 'off',
+            'vue/html-self-closing': 'off',
+            'vue/max-attributes-per-line': 'off',
             'vue/multi-word-component-names': 'off',
+            'vue/multiline-html-element-content-newline': 'off',
+            'vue/no-v-html': 'off',
+            'vue/prop-name-casing': 'off',
+            'vue/require-default-prop': 'off',
+            'vue/singleline-html-element-content-newline': 'off',
         },
     },
 ];

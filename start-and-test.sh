@@ -77,5 +77,5 @@ echo "📊 Service status:"
 $DOCKER_CMD ps
 
 echo "✅ Setup complete!"
-echo "🌐 Web interface available at: http://localhost:8080"
+echo "🌐 Web interface available at: http://localhost"
 echo "📧 MailHog available at: http://localhost:8025"

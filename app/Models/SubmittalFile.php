@@ -54,6 +54,11 @@ class SubmittalFile extends Model
         return $this->hasMany(PdfMarkup::class, 'submittal_file_id');
     }
 
+    public function pageScales(): HasMany
+    {
+        return $this->hasMany(PdfPageScale::class, 'submittal_file_id');
+    }
+
     // Scopes
 
     public function scopeCurrent($query)
