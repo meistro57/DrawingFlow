@@ -23,7 +23,6 @@ class DashboardMyQueueTest extends TestCase
 
         $customer = Customer::create([
             'name' => 'Queue Customer',
-            'code' => 'QUEUE-CUST',
             'active' => true,
         ]);
 
@@ -135,7 +134,6 @@ class DashboardMyQueueTest extends TestCase
 
         $customer = Customer::create([
             'name' => 'Filtered Queue Customer',
-            'code' => 'FILTER-CUST',
             'active' => true,
         ]);
 

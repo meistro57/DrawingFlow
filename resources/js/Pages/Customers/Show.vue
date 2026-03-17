@@ -33,7 +33,6 @@ function deleteCustomer() {
               <h1 class="text-2xl font-bold text-gray-900">{{ customer.name }}</h1>
               <StatusBadge :status="customer.active ? 'active' : 'on_hold'" />
             </div>
-            <p class="mt-1 text-sm text-gray-500">Code: {{ customer.code }}</p>
           </div>
           <div class="flex space-x-3">
             <Link

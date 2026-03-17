@@ -547,7 +547,6 @@ class SubmittalPdfMarkupTest extends TestCase
     {
         $customer = Customer::create([
             'name' => "Customer {$suffix}",
-            'code' => "CUST-{$suffix}",
             'active' => true,
         ]);
 

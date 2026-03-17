@@ -97,7 +97,6 @@ class NotificationCenterTest extends TestCase
     {
         $customer = Customer::create([
             'name' => "Notification Customer {$suffix}",
-            'code' => "NC-{$suffix}",
             'active' => true,
         ]);
 

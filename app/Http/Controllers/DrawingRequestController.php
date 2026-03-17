@@ -127,13 +127,13 @@ class DrawingRequestController extends Controller
     {
         return Customer::active()
             ->orderBy('name')
-            ->get(['id', 'name', 'code', 'address', 'city', 'state', 'zip', 'country']);
+            ->get(['id', 'name', 'address', 'city', 'state', 'zip', 'country']);
     }
 
     private function projectsForForm()
     {
         return Project::active()
-            ->with('customer:id,name,code,address,city,state,zip,country')
+            ->with('customer:id,name,address,city,state,zip,country')
             ->orderBy('name')
             ->get(['id', 'name', 'project_number', 'customer_id', 'address', 'city', 'state', 'zip']);
     }

@@ -16,9 +16,9 @@ class CustomerImportTest extends TestCase
     {
         $user = User::factory()->create();
         $csv = $this->csvFile(<<<'CSV'
-name,code,email,active
-ACME Steel,ACME,acme@example.com,1
-Blue Ridge Fabrication,BLUE,blue@example.com,0
+name,email,active
+ACME Steel,acme@example.com,1
+Blue Ridge Fabrication,blue@example.com,0
 CSV);
 
         $response = $this->actingAs($user)->post(route('customers.import'), [
@@ -27,32 +27,29 @@ CSV);
 
         $response->assertRedirect(route('customers.index'));
         $this->assertDatabaseHas('customers', [
-            'code' => 'ACME',
             'name' => 'ACME Steel',
             'email' => 'acme@example.com',
             'active' => 1,
         ]);
         $this->assertDatabaseHas('customers', [
-            'code' => 'BLUE',
             'name' => 'Blue Ridge Fabrication',
             'email' => 'blue@example.com',
             'active' => 0,
         ]);
     }
 
-    public function test_import_updates_existing_customer_by_code(): void
+    public function test_import_updates_existing_customer_by_name(): void
     {
         $user = User::factory()->create();
         Customer::create([
-            'name' => 'Old Name',
-            'code' => 'ACME',
+            'name' => 'ACME Steel',
             'email' => 'old@example.com',
             'active' => true,
         ]);
 
         $csv = $this->csvFile(<<<'CSV'
-name,code,email,active
-ACME Updated,ACME,new@example.com,1
+name,email,active
+ACME Steel,new@example.com,1
 CSV);
 
         $this->actingAs($user)->post(route('customers.import'), [
@@ -60,22 +57,21 @@ CSV);
         ])->assertRedirect(route('customers.index'));
 
         $this->assertDatabaseHas('customers', [
-            'code' => 'ACME',
-            'name' => 'ACME Updated',
+            'name' => 'ACME Steel',
             'email' => 'new@example.com',
             'active' => 1,
         ]);
         $this->assertDatabaseCount('customers', 1);
     }
 
-    public function test_import_skips_rows_missing_required_columns(): void
+    public function test_import_skips_rows_missing_required_name(): void
     {
         $user = User::factory()->create();
         $csv = $this->csvFile(<<<'CSV'
-name,code,email
-,NO_NAME,row1@example.com
-No Code,,row2@example.com
-Valid Customer,VALID,row3@example.com
+name,email
+,row1@example.com
+No Code,row2@example.com
+Valid Customer,row3@example.com
 CSV);
 
         $response = $this->actingAs($user)->post(route('customers.import'), [
@@ -86,11 +82,14 @@ CSV);
         $response->assertSessionHas('error');
 
         $this->assertDatabaseHas('customers', [
-            'code' => 'VALID',
+            'name' => 'No Code',
+            'email' => 'row2@example.com',
+        ]);
+        $this->assertDatabaseHas('customers', [
             'name' => 'Valid Customer',
             'email' => 'row3@example.com',
         ]);
-        $this->assertDatabaseCount('customers', 1);
+        $this->assertDatabaseCount('customers', 2);
     }
 
     public function test_import_reports_missing_required_headers(): void
@@ -107,9 +106,49 @@ CSV);
 
         $response->assertRedirect(route('customers.index'));
         $response->assertSessionHas('error', function (string $message): bool {
-            return str_contains($message, 'Missing required header(s): name, code');
+            return str_contains($message, 'Missing required header(s): name');
         });
         $this->assertDatabaseCount('customers', 0);
+    }
+
+    public function test_import_does_not_create_duplicate_row_when_name_repeats_in_file(): void
+    {
+        $user = User::factory()->create();
+        $csv = $this->csvFile(<<<'CSV'
+name,email
+A & A Underground,a@example.com
+A & A Underground,updated@example.com
+CSV);
+
+        $this->actingAs($user)->post(route('customers.import'), [
+            'file' => $csv,
+        ])->assertRedirect(route('customers.index'));
+
+        $this->assertDatabaseHas('customers', [
+            'name' => 'A & A Underground',
+            'email' => 'updated@example.com',
+        ]);
+        $this->assertDatabaseCount('customers', 1);
+    }
+
+    public function test_import_uses_first_phone_line_when_csv_cell_contains_multiple_lines(): void
+    {
+        $user = User::factory()->create();
+        $csv = $this->csvFile(<<<'CSV'
+name,phone
+Bert's Welding Inc.*,Phone: 815-337-2227
+Fax: (815) 337-2228
+Mobile: (815) 790-4091
+CSV);
+
+        $this->actingAs($user)->post(route('customers.import'), [
+            'file' => $csv,
+        ])->assertRedirect(route('customers.index'));
+
+        $this->assertDatabaseHas('customers', [
+            'name' => "Bert's Welding Inc.*",
+            'phone' => 'Phone: 815-337-2227',
+        ]);
     }
 
     public function test_import_requires_csv_file(): void

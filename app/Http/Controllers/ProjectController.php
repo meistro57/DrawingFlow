@@ -28,7 +28,7 @@ class ProjectController extends Controller
     public function create(): Response
     {
         return Inertia::render('Projects/Create', [
-            'customers' => Customer::active()->orderBy('name')->get(['id', 'name', 'code']),
+            'customers' => Customer::active()->orderBy('name')->get(['id', 'name']),
             'preselected_customer_id' => request('customer_id'),
         ]);
     }
@@ -73,7 +73,7 @@ class ProjectController extends Controller
     {
         return Inertia::render('Projects/Edit', [
             'project' => $project,
-            'customers' => Customer::active()->orderBy('name')->get(['id', 'name', 'code']),
+            'customers' => Customer::active()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

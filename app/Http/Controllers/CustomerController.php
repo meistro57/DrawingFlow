@@ -24,8 +24,6 @@ class CustomerController extends Controller
             'oldest' => ['created_at', 'asc'],
             'name_asc' => ['name', 'asc'],
             'name_desc' => ['name', 'desc'],
-            'code_asc' => ['code', 'asc'],
-            'code_desc' => ['code', 'desc'],
         ];
 
         if (! array_key_exists($sort, $sortMap)) {
@@ -39,7 +37,6 @@ class CustomerController extends Controller
             ->when($search !== '', function ($query) use ($search): void {
                 $query->where(function ($subQuery) use ($search): void {
                     $subQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                 });
             })

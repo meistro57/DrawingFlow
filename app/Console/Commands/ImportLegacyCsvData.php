@@ -282,7 +282,6 @@ class ImportLegacyCsvData extends Command
 
         return Customer::query()->create([
             'name' => $customerName,
-            'code' => null,
             'active' => true,
         ]);
     }

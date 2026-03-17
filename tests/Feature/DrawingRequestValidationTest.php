@@ -78,7 +78,6 @@ class DrawingRequestValidationTest extends TestCase
     {
         $customer = Customer::create([
             'name' => 'Validation Test Customer',
-            'code' => 'VAL-CUST-001',
             'active' => true,
         ]);
 

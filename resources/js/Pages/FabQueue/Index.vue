@@ -22,6 +22,20 @@ const localTableForm = reactive({
   density: 'comfortable',
 });
 
+const entryRows = computed(() => props.entries?.data ?? []);
+const pageStats = computed(() => {
+  const total = entryRows.value.length;
+  const queued = entryRows.value.filter((entry) => entry.status === 'queued').length;
+  const inProgress = entryRows.value.filter((entry) => entry.status === 'in_progress').length;
+  const unassigned = entryRows.value.filter((entry) => !entry.assigned_to?.name).length;
+
+  return {
+    total,
+    queued,
+    inProgress,
+    unassigned,
+  };
+});
 const rowSpacingClass = computed(() => {
   if (localTableForm.density === 'compact') {
     return 'px-4 py-2';
@@ -97,6 +111,22 @@ function resetQuickFilters() {
   localTableForm.status = 'all';
   localTableForm.assignee = 'all';
 }
+
+function priorityClasses(priority) {
+  if (priority <= 1) {
+    return 'bg-red-100 text-red-800';
+  }
+
+  if (priority <= 3) {
+    return 'bg-orange-100 text-orange-800';
+  }
+
+  if (priority <= 5) {
+    return 'bg-blue-100 text-blue-800';
+  }
+
+  return 'bg-gray-100 text-gray-600';
+}
 </script>
 
 <template>
@@ -110,8 +140,27 @@ function resetQuickFilters() {
           <p class="mt-1 text-sm text-gray-500">Manage fabrication jobs ordered by priority.</p>
         </div>
 
+        <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <p class="text-xs uppercase tracking-wider text-gray-500">On This Page</p>
+            <p class="mt-2 text-2xl font-semibold text-gray-900">{{ pageStats.total }}</p>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <p class="text-xs uppercase tracking-wider text-gray-500">Queued</p>
+            <p class="mt-2 text-2xl font-semibold text-amber-700">{{ pageStats.queued }}</p>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <p class="text-xs uppercase tracking-wider text-gray-500">In Progress</p>
+            <p class="mt-2 text-2xl font-semibold text-blue-700">{{ pageStats.inProgress }}</p>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <p class="text-xs uppercase tracking-wider text-gray-500">Unassigned</p>
+            <p class="mt-2 text-2xl font-semibold text-gray-900">{{ pageStats.unassigned }}</p>
+          </div>
+        </div>
+
         <div class="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700">Quick Table Search</label>
               <input
@@ -132,6 +181,17 @@ function resetQuickFilters() {
                 <option value="in_progress">In Progress</option>
                 <option value="completed">Completed</option>
                 <option value="on_hold">On Hold</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Assignment</label>
+              <select
+                v-model="localTableForm.assignee"
+                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              >
+                <option value="all">All</option>
+                <option value="assigned">Assigned</option>
+                <option value="unassigned">Unassigned</option>
               </select>
             </div>
             <div>
@@ -189,7 +249,7 @@ function resetQuickFilters() {
           </div>
         </div>
 
-        <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
           <div v-if="entries.data.length" class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
@@ -197,17 +257,7 @@ function resetQuickFilters() {
                   <th
                     class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                   >
-                    Priority
-                  </th>
-                  <th
-                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Queue #
-                  </th>
-                  <th
-                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Request
+                    Queue
                   </th>
                   <th
                     class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
@@ -237,81 +287,93 @@ function resetQuickFilters() {
                   :key="entry.id"
                   class="transition hover:bg-gray-50"
                 >
-                  <td :class="`${rowSpacingClass} whitespace-nowrap`">
-                    <span
-                      :class="[
-                        entry.priority <= 1
-                          ? 'bg-red-100 text-red-800'
-                          : entry.priority <= 3
-                            ? 'bg-orange-100 text-orange-800'
-                            : entry.priority <= 5
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-gray-100 text-gray-600',
-                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                      ]"
-                    >
-                      P{{ entry.priority }}
-                    </span>
+                  <td :class="rowSpacingClass">
+                    <div class="space-y-1">
+                      <div class="flex items-center gap-2">
+                        <Link
+                          :href="route('fab-queue.show', entry.id)"
+                          class="text-sm font-semibold text-primary-600 hover:text-primary-800"
+                        >
+                          {{ entry.queue_number }}
+                        </Link>
+                        <span
+                          class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                          :class="priorityClasses(entry.priority)"
+                        >
+                          P{{ entry.priority }}
+                        </span>
+                      </div>
+                      <p class="text-xs text-gray-500">
+                        {{
+                          entry.submittal?.drawing_request?.request_number ??
+                          'No linked drawing request'
+                        }}
+                      </p>
+                    </div>
                   </td>
-                  <td :class="`${rowSpacingClass} whitespace-nowrap text-sm font-medium`">
-                    <Link
-                      :href="route('fab-queue.show', entry.id)"
-                      class="text-primary-600 hover:text-primary-800"
-                    >
-                      {{ entry.queue_number }}
-                    </Link>
+                  <td :class="rowSpacingClass">
+                    <div class="space-y-1">
+                      <Link
+                        v-if="entry.project"
+                        :href="route('projects.show', entry.project.id)"
+                        class="text-sm font-semibold text-primary-600 hover:text-primary-800"
+                      >
+                        {{ entry.project.name }}
+                      </Link>
+                      <p v-else class="text-sm text-gray-500">No project linked</p>
+                      <p class="text-xs text-gray-500">
+                        {{
+                          entry.submittal?.drawing_request
+                            ? 'Drawing request ready for fabrication'
+                            : 'Waiting for request context'
+                        }}
+                      </p>
+                    </div>
                   </td>
-                  <td :class="`${rowSpacingClass} whitespace-nowrap text-sm text-gray-500`">
-                    <Link
-                      v-if="entry.submittal?.drawing_request"
-                      :href="route('drawing-requests.show', entry.submittal.drawing_request.id)"
-                      class="text-primary-600 hover:text-primary-800"
-                    >
-                      {{ entry.submittal.drawing_request.request_number }}
-                    </Link>
-                  </td>
-                  <td :class="`${rowSpacingClass} whitespace-nowrap text-sm text-gray-500`">
-                    <Link
-                      v-if="entry.project"
-                      :href="route('projects.show', entry.project.id)"
-                      class="text-primary-600 hover:text-primary-800"
-                    >
-                      {{ entry.project.name }}
-                    </Link>
-                  </td>
-                  <td :class="`${rowSpacingClass} whitespace-nowrap text-sm text-gray-500`">
-                    {{ entry.assigned_to?.name || 'Unassigned' }}
+                  <td :class="rowSpacingClass">
+                    <div class="space-y-1">
+                      <p class="text-sm text-gray-700">
+                        {{ entry.assigned_to?.name || 'Unassigned' }}
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        {{
+                          entry.assigned_to?.name ? 'Assigned fabricator' : 'Needs assignment'
+                        }}
+                      </p>
+                    </div>
                   </td>
                   <td :class="`${rowSpacingClass} whitespace-nowrap`">
                     <StatusBadge :status="entry.status" />
                   </td>
                   <td
-                    :class="`${rowSpacingClass} whitespace-nowrap text-right text-sm font-medium space-x-2`"
+                    :class="`${rowSpacingClass} whitespace-nowrap text-right text-sm font-medium`"
                   >
-                    <button
-                      v-if="entry.status === 'queued'"
-                      @click="openAssign(entry)"
-                      class="text-primary-600 hover:text-primary-800"
-                    >
-                      Assign
-                    </button>
-                    <button
-                      v-if="entry.status === 'in_progress'"
-                      @click="markComplete(entry)"
-                      class="text-green-600 hover:text-green-800"
-                    >
-                      Complete
-                    </button>
-                    <Link
-                      :href="route('fab-queue.show', entry.id)"
-                      class="text-primary-600 hover:text-primary-800"
-                    >
-                      View
-                    </Link>
+                    <div class="inline-flex items-center gap-3">
+                      <button
+                        v-if="entry.status === 'queued'"
+                        @click="openAssign(entry)"
+                        class="text-primary-600 hover:text-primary-800"
+                      >
+                        Assign
+                      </button>
+                      <button
+                        v-if="entry.status === 'in_progress'"
+                        @click="markComplete(entry)"
+                        class="text-green-600 hover:text-green-800"
+                      >
+                        Complete
+                      </button>
+                      <Link
+                        :href="route('fab-queue.show', entry.id)"
+                        class="text-primary-600 hover:text-primary-800"
+                      >
+                        View
+                      </Link>
+                    </div>
                   </td>
                 </tr>
                 <tr v-if="displayedEntries.length === 0">
-                  <td colspan="7" class="px-5 py-8 text-center text-sm text-gray-500">
+                  <td colspan="5" class="px-5 py-8 text-center text-sm text-gray-500">
                     No rows match the current quick filters.
                   </td>
                 </tr>

@@ -70,7 +70,6 @@ class SubmittalNotesTest extends TestCase
     {
         $customer = Customer::create([
             'name' => "Notes Customer {$suffix}",
-            'code' => "NS-{$suffix}",
             'active' => true,
         ]);
 

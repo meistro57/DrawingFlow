@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Customer;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 
 class CustomerImportService
 {
@@ -24,14 +25,14 @@ class CustomerImportService
             $payload = $this->normalizeRow($rowData['row']);
             $line = $rowData['line'];
 
-            if (($payload['name'] ?? null) === null || ($payload['code'] ?? null) === null) {
+            if (($payload['name'] ?? null) === null) {
                 $skipped++;
-                $errors[] = "Line {$line}: missing required value for name or code.";
+                $errors[] = "Line {$line}: missing required value for name.";
 
                 continue;
             }
 
-            $customer = Customer::where('code', $payload['code'])->first();
+            $customer = $this->resolveCustomerForImport($payload);
 
             if ($customer) {
                 $customer->update($payload);
@@ -82,7 +83,7 @@ class CustomerImportService
             return strtolower(trim($value));
         }, $headers);
 
-        $requiredHeaders = ['name', 'code'];
+        $requiredHeaders = ['name'];
         $missingHeaders = array_values(array_diff($requiredHeaders, $headers));
 
         if ($missingHeaders !== []) {
@@ -142,7 +143,7 @@ class CustomerImportService
 
     /**
      * @param  array<string, string|null>  $row
-     * @return array{name:?string,code:?string,email:?string,phone:?string,address:?string,city:?string,state:?string,zip:?string,country:string,notes:?string,active:bool}
+     * @return array{name:?string,email:?string,phone:?string,address:?string,city:?string,state:?string,zip:?string,country:string,notes:?string,active:bool}
      */
     private function normalizeRow(array $row): array
     {
@@ -150,9 +151,8 @@ class CustomerImportService
 
         return [
             'name' => $this->nullableValue($row['name'] ?? null),
-            'code' => $this->nullableValue($row['code'] ?? null),
             'email' => $this->nullableValue($row['email'] ?? null),
-            'phone' => $this->nullableValue($row['phone'] ?? null),
+            'phone' => $this->normalizePhone($row['phone'] ?? null),
             'address' => $this->nullableValue($row['address'] ?? null),
             'city' => $this->nullableValue($row['city'] ?? null),
             'state' => $this->nullableValue($row['state'] ?? null),
@@ -168,5 +168,34 @@ class CustomerImportService
         $trimmed = trim((string) $value);
 
         return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function normalizePhone(?string $value): ?string
+    {
+        $phoneValue = $this->nullableValue($value);
+
+        if ($phoneValue === null) {
+            return null;
+        }
+
+        $phoneLines = preg_split('/\r\n|\r|\n/', $phoneValue) ?: [];
+
+        foreach ($phoneLines as $line) {
+            $trimmedLine = trim($line);
+
+            if ($trimmedLine !== '') {
+                return mb_substr($trimmedLine, 0, 50);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array{name:?string,email:?string,phone:?string,address:?string,city:?string,state:?string,zip:?string,country:string,notes:?string,active:bool}  $payload
+     */
+    private function resolveCustomerForImport(array $payload): ?Customer
+    {
+        return Customer::whereRaw('lower(name) = ?', [Str::lower((string) $payload['name'])])->first();
     }
 }

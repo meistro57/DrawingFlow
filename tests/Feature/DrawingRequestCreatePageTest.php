@@ -19,7 +19,6 @@ class DrawingRequestCreatePageTest extends TestCase
 
         $customer = Customer::create([
             'name' => 'Acme Steel',
-            'code' => 'ACME',
             'address' => '100 Main St',
             'city' => 'Houston',
             'state' => 'TX',
@@ -44,10 +43,10 @@ class DrawingRequestCreatePageTest extends TestCase
         $response->assertOk();
         $response->assertInertia(fn (Assert $page) => $page
             ->component('DrawingRequests/Create')
-            ->where('customers.0.code', 'ACME')
+            ->where('customers.0.name', 'Acme Steel')
             ->where('customers.0.address', '100 Main St')
             ->where('projects.0.project_number', 'JOB-100')
             ->where('projects.0.address', '200 Jobsite Ave')
-            ->where('projects.0.customer.code', 'ACME'));
+            ->where('projects.0.customer.name', 'Acme Steel'));
     }
 }

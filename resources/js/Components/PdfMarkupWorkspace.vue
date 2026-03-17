@@ -86,8 +86,7 @@ const selectedStamp = ref(stampOptions[0]);
 const pdfFiles = computed(() =>
   props.files.filter(
     (file) =>
-      file.mime_type === 'application/pdf' ||
-      file.original_filename.toLowerCase().endsWith('.pdf')
+      file.mime_type === 'application/pdf' || file.original_filename.toLowerCase().endsWith('.pdf')
   )
 );
 
@@ -172,8 +171,7 @@ const renderedMarkups = computed(() => {
 
   return allMarkups.filter(
     (markup) =>
-      markup.page_number === pageNumber.value &&
-      !hiddenMarkupTypes.value[markup.markup_type]
+      markup.page_number === pageNumber.value && !hiddenMarkupTypes.value[markup.markup_type]
   );
 });
 
@@ -324,7 +322,8 @@ function measuredDistanceLabel(x, y, x2, y2) {
     return `${distance.toFixed(1)} u`;
   }
 
-  const convertedLength = (distance / Number(scale.calibration_distance)) * Number(scale.real_length);
+  const convertedLength =
+    (distance / Number(scale.calibration_distance)) * Number(scale.real_length);
 
   return `${convertedLength.toFixed(2)} ${scale.unit}`;
 }
@@ -582,10 +581,7 @@ function addPathVertex(point) {
 }
 
 async function handleSurfaceClick(event) {
-  if (
-    !selectedFileId.value ||
-    !viewerSurface.value
-  ) {
+  if (!selectedFileId.value || !viewerSurface.value) {
     return;
   }
 
@@ -714,11 +710,7 @@ async function deleteMarkup(markupId) {
 
   try {
     await window.axios.delete(
-      route('submittals.files.markups.destroy', [
-        props.submittalId,
-        selectedFileId.value,
-        markupId,
-      ])
+      route('submittals.files.markups.destroy', [props.submittalId, selectedFileId.value, markupId])
     );
 
     markups.value = markups.value.filter((markup) => markup.id !== markupId);
@@ -749,7 +741,10 @@ async function updateSelectedMarkup() {
       stroke_width: editStrokeWidth.value,
       opacity: editOpacity.value,
       font_size: editFontSize.value,
-      text: existingMarkup.markup_type === 'text' ? editText.value.trim() : existingMarkup.markup_data?.text,
+      text:
+        existingMarkup.markup_type === 'text'
+          ? editText.value.trim()
+          : existingMarkup.markup_data?.text,
       label: ['stamp', 'dimension'].includes(existingMarkup.markup_type)
         ? editLabel.value.trim()
         : existingMarkup.markup_data?.label,
@@ -805,7 +800,12 @@ function handleImportFileChange(event) {
 }
 
 async function savePageScale() {
-  if (!selectedFileId.value || !scaleDraft.value?.distance || !scaleRealLength.value || !scaleUnit.value) {
+  if (
+    !selectedFileId.value ||
+    !scaleDraft.value?.distance ||
+    !scaleRealLength.value ||
+    !scaleUnit.value
+  ) {
     saveError.value = 'Draw a calibration line and enter a real-world length and unit first.';
     return;
   }
@@ -815,7 +815,11 @@ async function savePageScale() {
 
   try {
     const response = await window.axios.put(
-      route('submittals.files.page-scales.upsert', [props.submittalId, selectedFileId.value, pageNumber.value]),
+      route('submittals.files.page-scales.upsert', [
+        props.submittalId,
+        selectedFileId.value,
+        pageNumber.value,
+      ]),
       {
         calibration_distance: scaleDraft.value.distance,
         real_length: Number(scaleRealLength.value),
@@ -847,7 +851,11 @@ async function clearPageScale() {
 
   try {
     await window.axios.delete(
-      route('submittals.files.page-scales.destroy', [props.submittalId, selectedFileId.value, pageNumber.value])
+      route('submittals.files.page-scales.destroy', [
+        props.submittalId,
+        selectedFileId.value,
+        pageNumber.value,
+      ])
     );
 
     pageScales.value = pageScales.value.filter((scale) => scale.page_number !== pageNumber.value);
@@ -1284,9 +1292,13 @@ watch(selectedFileId, async () => {
   await loadPageScales();
 });
 
-watch(selectedHistoryMarkup, (markup) => {
-  syncSelectedMarkupEditor(markup);
-}, { immediate: true });
+watch(
+  selectedHistoryMarkup,
+  (markup) => {
+    syncSelectedMarkupEditor(markup);
+  },
+  { immediate: true }
+);
 
 watch(compareMode, (enabled) => {
   if (!enabled) {
@@ -1312,16 +1324,20 @@ watch(
   { immediate: true }
 );
 
-watch(currentPageScale, (scale) => {
-  if (!scale) {
-    scaleRealLength.value = '';
-    scaleUnit.value = 'ft';
-    return;
-  }
+watch(
+  currentPageScale,
+  (scale) => {
+    if (!scale) {
+      scaleRealLength.value = '';
+      scaleUnit.value = 'ft';
+      return;
+    }
 
-  scaleRealLength.value = String(scale.real_length);
-  scaleUnit.value = scale.unit;
-}, { immediate: true });
+    scaleRealLength.value = String(scale.real_length);
+    scaleUnit.value = scale.unit;
+  },
+  { immediate: true }
+);
 
 onMounted(async () => {
   if (selectedFileId.value) {
@@ -1371,8 +1387,8 @@ onBeforeUnmount(() => {
         <div>
           <h2 class="text-lg font-medium text-gray-900">PDF Markup Workspace</h2>
           <p class="mt-1 text-xs text-gray-500">
-            Bluebeam-style review tools: compare versions, annotate by page, add dimensions,
-            manage comments, and export markup sets.
+            Bluebeam-style review tools: compare versions, annotate by page, add dimensions, manage
+            comments, and export markup sets.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -1383,7 +1399,9 @@ onBeforeUnmount(() => {
           >
             Prev Page
           </button>
-          <div class="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
+          <div
+            class="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2"
+          >
             <label for="pdf-page" class="text-xs font-medium text-gray-600">Page</label>
             <input
               id="pdf-page"
@@ -1391,7 +1409,7 @@ onBeforeUnmount(() => {
               type="number"
               min="1"
               class="w-20 rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-            >
+            />
           </div>
           <button
             type="button"
@@ -1427,7 +1445,7 @@ onBeforeUnmount(() => {
             v-model="currentColor"
             type="color"
             class="mt-1 block h-10 w-full rounded-md border border-gray-300 bg-white p-1"
-          >
+          />
         </label>
 
         <label class="block text-xs font-medium text-gray-600">
@@ -1477,12 +1495,15 @@ onBeforeUnmount(() => {
             maxlength="500"
             class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
             placeholder="Optional note"
-          >
+          />
         </label>
       </div>
 
       <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <label v-if="activeTool === 'text'" class="block text-xs font-medium text-gray-600 xl:col-span-2">
+        <label
+          v-if="activeTool === 'text'"
+          class="block text-xs font-medium text-gray-600 xl:col-span-2"
+        >
           Text
           <input
             v-model="textContent"
@@ -1490,7 +1511,7 @@ onBeforeUnmount(() => {
             maxlength="500"
             class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
             placeholder="Click on the PDF to place this text"
-          >
+          />
         </label>
 
         <template v-if="activeTool === 'stamp'">
@@ -1512,19 +1533,22 @@ onBeforeUnmount(() => {
               maxlength="100"
               class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
               placeholder="Optional override"
-            >
+            />
           </label>
         </template>
 
-        <label v-if="activeTool === 'dimension'" class="block text-xs font-medium text-gray-600 xl:col-span-2">
+        <label
+          v-if="activeTool === 'dimension'"
+          class="block text-xs font-medium text-gray-600 xl:col-span-2"
+        >
           Dimension Label
           <input
             v-model="dimensionLabel"
             type="text"
             maxlength="100"
             class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-            placeholder="Optional override, e.g. 24&quot;-0&quot;"
-          >
+            placeholder='Optional override, e.g. 24"-0"'
+          />
         </label>
 
         <label class="block text-xs font-medium text-gray-600">
@@ -1548,8 +1572,9 @@ onBeforeUnmount(() => {
             </p>
             <p class="mt-2 text-xs text-gray-600">
               <span v-if="currentPageScale">
-                Current scale: {{ Number(currentPageScale.real_length).toFixed(2) }} {{ currentPageScale.unit }}
-                per {{ Number(currentPageScale.calibration_distance).toFixed(2) }} canvas units
+                Current scale: {{ Number(currentPageScale.real_length).toFixed(2) }}
+                {{ currentPageScale.unit }} per
+                {{ Number(currentPageScale.calibration_distance).toFixed(2) }} canvas units
               </span>
               <span v-else>No scale saved for page {{ pageNumber }}.</span>
             </p>
@@ -1558,7 +1583,11 @@ onBeforeUnmount(() => {
             <button
               type="button"
               class="rounded-md border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition"
-              :class="isCalibratingScale ? 'border-primary-600 bg-primary-600 text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'"
+              :class="
+                isCalibratingScale
+                  ? 'border-primary-600 bg-primary-600 text-white'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              "
               @click="isCalibratingScale = !isCalibratingScale"
             >
               {{ isCalibratingScale ? 'Cancel Calibration' : 'Draw Scale Line' }}
@@ -1583,7 +1612,7 @@ onBeforeUnmount(() => {
               step="0.01"
               class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
               placeholder="24"
-            >
+            />
           </label>
 
           <label class="block text-xs font-medium text-gray-600">
@@ -1594,7 +1623,7 @@ onBeforeUnmount(() => {
               maxlength="20"
               class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
               placeholder="ft"
-            >
+            />
           </label>
 
           <div class="flex items-end">
@@ -1639,7 +1668,7 @@ onBeforeUnmount(() => {
             v-model="compareMode"
             type="checkbox"
             class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-          >
+          />
           Compare side-by-side
         </label>
 
@@ -1648,7 +1677,11 @@ onBeforeUnmount(() => {
           v-model="comparisonFileId"
           class="rounded-md border-gray-300 text-xs focus:border-primary-500 focus:ring-primary-500"
         >
-          <option v-for="candidate in comparisonCandidates" :key="candidate.id" :value="candidate.id">
+          <option
+            v-for="candidate in comparisonCandidates"
+            :key="candidate.id"
+            :value="candidate.id"
+          >
             {{ candidate.original_filename }}
           </option>
         </select>
@@ -1687,9 +1720,16 @@ onBeforeUnmount(() => {
           Clear Page
         </button>
 
-        <label class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700">
+        <label
+          class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700"
+        >
           <span>Import JSON</span>
-          <input type="file" accept=".json,application/json" class="hidden" @change="handleImportFileChange">
+          <input
+            type="file"
+            accept=".json,application/json"
+            class="hidden"
+            @change="handleImportFileChange"
+          />
         </label>
 
         <span v-if="importFileName" class="text-xs text-gray-500">{{ importFileName }}</span>
@@ -1710,10 +1750,13 @@ onBeforeUnmount(() => {
     </div>
 
     <div v-else>
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 px-6 py-3 text-xs text-gray-500">
+      <div
+        class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 px-6 py-3 text-xs text-gray-500"
+      >
         <span v-if="selectedFile">
           Viewing: {{ selectedFile.original_filename }} · Page {{ pageNumber }} ·
-          {{ currentPageMarkups.length }} markup{{ currentPageMarkups.length === 1 ? '' : 's' }} on page
+          {{ currentPageMarkups.length }} markup{{ currentPageMarkups.length === 1 ? '' : 's' }} on
+          page
         </span>
         <div class="flex items-center gap-3">
           <a
@@ -1741,10 +1784,17 @@ onBeforeUnmount(() => {
 
       <div
         class="grid grid-cols-1 gap-4 p-4"
-        :class="compareMode && comparisonViewerUrl ? 'xl:grid-cols-[minmax(0,1fr)_22rem]' : 'xl:grid-cols-[minmax(0,1fr)_22rem]'"
+        :class="
+          compareMode && comparisonViewerUrl
+            ? 'xl:grid-cols-[minmax(0,1fr)_22rem]'
+            : 'xl:grid-cols-[minmax(0,1fr)_22rem]'
+        "
       >
         <div class="space-y-4">
-          <div class="grid grid-cols-1 gap-4" :class="compareMode && comparisonViewerUrl ? 'md:grid-cols-2' : 'md:grid-cols-1'">
+          <div
+            class="grid grid-cols-1 gap-4"
+            :class="compareMode && comparisonViewerUrl ? 'md:grid-cols-2' : 'md:grid-cols-1'"
+          >
             <div>
               <p class="mb-2 text-xs font-medium text-gray-600">Primary</p>
               <div
@@ -1784,8 +1834,12 @@ onBeforeUnmount(() => {
                   >
                     <ellipse
                       v-if="markup.markup_type === 'circle'"
-                      :cx="numericMarkupValue(markup, 'x') + numericMarkupValue(markup, 'width') / 2"
-                      :cy="numericMarkupValue(markup, 'y') + numericMarkupValue(markup, 'height') / 2"
+                      :cx="
+                        numericMarkupValue(markup, 'x') + numericMarkupValue(markup, 'width') / 2
+                      "
+                      :cy="
+                        numericMarkupValue(markup, 'y') + numericMarkupValue(markup, 'height') / 2
+                      "
                       :rx="numericMarkupValue(markup, 'width') / 2"
                       :ry="numericMarkupValue(markup, 'height') / 2"
                       v-bind="styleFromMarkup(markup)"
@@ -1930,7 +1984,9 @@ onBeforeUnmount(() => {
                         rx="0.8"
                         :fill="markup.markup_data.bg_color || '#fff7ed'"
                         fill-opacity="0.9"
-                        :stroke="markup.markup_data.border_color || markup.markup_data.color || '#b91c1c'"
+                        :stroke="
+                          markup.markup_data.border_color || markup.markup_data.color || '#b91c1c'
+                        "
                         :stroke-width="effectiveStrokeWidth(markup) / 2"
                       />
                       <text
@@ -1955,7 +2011,19 @@ onBeforeUnmount(() => {
                 >
                   <g v-if="selectionBounds(selectedCanvasMarkup)">
                     <rect
-                      v-if="['circle', 'highlight', 'rectangle', 'cloud', 'text', 'stamp', 'pen', 'polyline', 'polygon'].includes(selectedCanvasMarkup.markup_type)"
+                      v-if="
+                        [
+                          'circle',
+                          'highlight',
+                          'rectangle',
+                          'cloud',
+                          'text',
+                          'stamp',
+                          'pen',
+                          'polyline',
+                          'polygon',
+                        ].includes(selectedCanvasMarkup.markup_type)
+                      "
                       :x="selectionBounds(selectedCanvasMarkup).x"
                       :y="selectionBounds(selectedCanvasMarkup).y"
                       :width="selectionBounds(selectedCanvasMarkup).width"
@@ -1991,7 +2059,8 @@ onBeforeUnmount(() => {
                       stroke="#0f766e"
                       stroke-width="0.5"
                       :class="
-                        ['text', 'stamp'].includes(selectedCanvasMarkup.markup_type) || ['start', 'end'].includes(handle.key)
+                        ['text', 'stamp'].includes(selectedCanvasMarkup.markup_type) ||
+                        ['start', 'end'].includes(handle.key)
                           ? 'pointer-events-auto cursor-move'
                           : 'pointer-events-auto cursor-nwse-resize'
                       "
@@ -2033,7 +2102,9 @@ onBeforeUnmount(() => {
 
           <div class="space-y-3 rounded-md border border-gray-200 bg-white p-3">
             <div class="flex items-center justify-between gap-3">
-              <h4 class="text-xs font-semibold uppercase tracking-wide text-gray-600">Review Filters</h4>
+              <h4 class="text-xs font-semibold uppercase tracking-wide text-gray-600">
+                Review Filters
+              </h4>
               <button
                 type="button"
                 class="text-[11px] font-semibold uppercase tracking-wide text-primary-600 transition hover:text-primary-800"
@@ -2050,7 +2121,7 @@ onBeforeUnmount(() => {
                 type="text"
                 class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
                 placeholder="Text, label, comment, page..."
-              >
+              />
             </label>
 
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -2078,11 +2149,7 @@ onBeforeUnmount(() => {
                   class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
                 >
                   <option value="all">All Authors</option>
-                  <option
-                    v-for="author in availableMarkupAuthors"
-                    :key="author"
-                    :value="author"
-                  >
+                  <option v-for="author in availableMarkupAuthors" :key="author" :value="author">
                     {{ author }}
                   </option>
                 </select>
@@ -2094,7 +2161,7 @@ onBeforeUnmount(() => {
                 v-model="commentsOnly"
                 type="checkbox"
                 class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-              >
+              />
               Only show markups with comments
             </label>
           </div>
@@ -2144,7 +2211,9 @@ onBeforeUnmount(() => {
                     <span class="font-medium text-gray-800">
                       {{ formatMarkupType(item.markup_type) }}
                     </span>
-                    <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600">
+                    <span
+                      class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-600"
+                    >
                       Page {{ item.page_number }}
                     </span>
                   </div>
@@ -2201,7 +2270,7 @@ onBeforeUnmount(() => {
                   type="number"
                   min="1"
                   class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-                >
+                />
               </label>
 
               <div class="grid grid-cols-2 gap-3">
@@ -2211,7 +2280,7 @@ onBeforeUnmount(() => {
                     v-model="editColor"
                     type="color"
                     class="mt-1 block h-10 w-full rounded-md border border-gray-300 bg-white p-1"
-                  >
+                  />
                 </label>
 
                 <label class="block text-xs font-medium text-gray-600">
@@ -2266,7 +2335,7 @@ onBeforeUnmount(() => {
                   type="text"
                   maxlength="500"
                   class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-                >
+                />
               </label>
 
               <label
@@ -2279,7 +2348,7 @@ onBeforeUnmount(() => {
                   type="text"
                   maxlength="100"
                   class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-                >
+                />
               </label>
 
               <label class="block text-xs font-medium text-gray-600">

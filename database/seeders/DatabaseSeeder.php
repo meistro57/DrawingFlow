@@ -35,7 +35,6 @@ class DatabaseSeeder extends Seeder
         // Create sample customers
         $customer1 = Customer::create([
             'name' => 'ABC General Contractors',
-            'code' => 'ABC-GC',
             'email' => 'submittals@abcgc.example.com',
             'phone' => '(555) 123-4567',
             'city' => 'Houston',
@@ -46,7 +45,6 @@ class DatabaseSeeder extends Seeder
 
         $customer2 = Customer::create([
             'name' => 'Smith Engineering',
-            'code' => 'SMITH-ENG',
             'email' => 'drawings@smitheng.example.com',
             'phone' => '(555) 987-6543',
             'city' => 'Dallas',

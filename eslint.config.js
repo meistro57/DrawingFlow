@@ -5,7 +5,7 @@ import globals from 'globals';
 /** @type {import('eslint').Linter.Config[]} */
 export default [
     {
-        ignores: ['public/build/**', 'vendor/**'],
+        ignores: ['public/build/**', 'vendor/**', 'resources/js/ziggy.js'],
     },
     {
         ...js.configs.recommended,

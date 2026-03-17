@@ -22,7 +22,6 @@ class ProjectAttachmentUploadTest extends TestCase
         $user = User::factory()->create();
         $customer = Customer::create([
             'name' => 'Attachment Test Customer',
-            'code' => 'ATTACH-CUST',
             'active' => true,
         ]);
 
@@ -57,7 +56,6 @@ class ProjectAttachmentUploadTest extends TestCase
         $user = User::factory()->create();
         $customer = Customer::create([
             'name' => 'Viewer Test Customer',
-            'code' => 'VIEW-CUST',
             'active' => true,
         ]);
         $project = Project::create([
@@ -98,7 +96,6 @@ class ProjectAttachmentUploadTest extends TestCase
         $user = User::factory()->create();
         $customer = Customer::create([
             'name' => 'Route Check Customer',
-            'code' => 'ROUTE-CUST',
             'active' => true,
         ]);
         $projectA = Project::create([
@@ -144,7 +141,6 @@ class ProjectAttachmentUploadTest extends TestCase
         $user = User::factory()->create();
         $customer = Customer::create([
             'name' => 'Update Attachment Customer',
-            'code' => 'UPD-CUST',
             'active' => true,
         ]);
         $project = Project::create([
