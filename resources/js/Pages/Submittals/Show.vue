@@ -244,7 +244,7 @@ const approvalTypeLabels = {
                   <span v-else class="text-xs text-gray-500">Visible to internal users only.</span>
                   <button
                     type="button"
-                    class="inline-flex items-center px-3 py-2 bg-primary-600 border border-transparent rounded-md text-xs font-semibold text-white hover:bg-primary-700 transition uppercase tracking-widest disabled:opacity-50"
+                    class="inline-flex items-center px-3 py-2 bg-primary-600 border border-transparent rounded-md text-xs font-semibold text-white hover:bg-primary-700 transition-all duration-150 ease-out active:scale-95 hover:shadow-sm uppercase tracking-widest disabled:opacity-50"
                     :disabled="isSavingNote || !noteForm.message.trim()"
                     @click="submitNote"
                   >
@@ -445,7 +445,7 @@ const approvalTypeLabels = {
         <button
           @click="processApproval"
           :disabled="!approvalForm.approval_type"
-          class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition disabled:opacity-50"
+          class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition-all duration-150 ease-out active:scale-95 hover:shadow-sm disabled:opacity-50"
         >
           Record Approval
         </button>

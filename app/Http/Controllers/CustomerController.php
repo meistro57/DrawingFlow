@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CustomerController extends Controller
 {
@@ -92,6 +93,33 @@ class CustomerController extends Controller
         }
 
         return $redirect;
+    }
+
+    public function downloadImportTemplate(): StreamedResponse
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="customers-import-template.csv"',
+        ];
+
+        $templateRows = [
+            ['name', 'email', 'phone', 'address', 'city', 'state', 'zip', 'country', 'notes', 'active'],
+            ['Acme Steel', 'estimating@acmesteel.com', '555-0100', '123 Industry Way', 'Denver', 'CO', '80202', 'USA', 'Primary structural steel partner', '1'],
+        ];
+
+        return response()->streamDownload(function () use ($templateRows): void {
+            $handle = fopen('php://output', 'w');
+
+            if ($handle === false) {
+                return;
+            }
+
+            foreach ($templateRows as $row) {
+                fputcsv($handle, $row);
+            }
+
+            fclose($handle);
+        }, 'customers-import-template.csv', $headers);
     }
 
     public function show(Customer $customer): Response

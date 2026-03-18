@@ -111,7 +111,7 @@ function deleteCustomer() {
 
             <Link
               :href="route('projects.create', { customer_id: customer.id })"
-              class="block w-full text-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition"
+              class="block w-full text-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition-all duration-150 ease-out active:scale-95 hover:shadow-sm"
             >
               Add Project
             </Link>
@@ -144,7 +144,7 @@ function deleteCustomer() {
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="project in customer.projects" :key="project.id" class="hover:bg-gray-50">
+              <tr v-for="project in customer.projects" :key="project.id" class="hover:bg-gray-50 transition-colors duration-150 ease-out">
                 <td class="px-5 py-3 whitespace-nowrap text-sm">
                   <Link
                     :href="route('projects.show', project.id)"

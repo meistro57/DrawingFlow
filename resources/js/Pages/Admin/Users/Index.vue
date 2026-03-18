@@ -86,22 +86,36 @@ function deleteUser(user) {
 
     <div class="py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="mb-6 flex items-center justify-between gap-3">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">Admin Panel</h1>
-            <p class="mt-1 text-sm text-gray-500">Manage user roles and account status.</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">Admin Panel</h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">Manage user roles and account status.</p>
           </div>
-          <Link
-            :href="route('admin.backups.index')"
-            class="inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-700 hover:bg-gray-50"
-          >
-            Data Backup
-          </Link>
+          <div class="flex items-center gap-2">
+            <Link
+              :href="route('admin.backups.index')"
+              class="inline-flex items-center rounded-md border border-white/30 bg-white/40 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 backdrop-blur-md transition hover:bg-white/60 dark:border-slate-600/60 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-900/60"
+            >
+              Data Backup
+            </Link>
+            <Link
+              :href="route('admin.boost.index')"
+              class="inline-flex items-center rounded-md border border-white/30 bg-white/40 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 backdrop-blur-md transition hover:bg-white/60 dark:border-slate-600/60 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-900/60"
+            >
+              Boost
+            </Link>
+            <Link
+              :href="route('admin.agent-flow.index')"
+              class="inline-flex items-center rounded-md border border-white/30 bg-white/40 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 backdrop-blur-md transition hover:bg-white/60 dark:border-slate-600/60 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-900/60"
+            >
+              Agent Flow
+            </Link>
+          </div>
         </div>
 
         <form
           @submit.prevent="createUser"
-          class="mb-6 bg-white border border-gray-200 rounded-lg shadow-sm"
+          class="mb-6 rounded-2xl border border-white/40 bg-white/60 shadow-xl shadow-slate-200/30 backdrop-blur-lg dark:border-slate-700/60 dark:bg-slate-900/50 dark:shadow-black/30"
         >
           <div class="p-5">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-700">Add User</h2>
@@ -184,7 +198,7 @@ function deleteUser(user) {
               </div>
             </div>
           </div>
-          <div class="flex justify-end border-t border-gray-200 bg-gray-50 px-5 py-3">
+          <div class="flex justify-end border-t border-white/40 bg-white/40 px-5 py-3 dark:border-slate-700/60 dark:bg-slate-900/40">
             <button
               type="submit"
               :disabled="createForm.processing"
@@ -195,10 +209,10 @@ function deleteUser(user) {
           </div>
         </form>
 
-        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="overflow-hidden rounded-2xl border border-white/40 bg-white/60 shadow-xl shadow-slate-200/30 backdrop-blur-lg dark:border-slate-700/60 dark:bg-slate-900/50 dark:shadow-black/30">
           <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
+            <table class="min-w-full divide-y divide-white/40 dark:divide-slate-700/60">
+              <thead class="bg-white/60 dark:bg-slate-900/60">
                 <tr>
                   <th
                     class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
@@ -232,8 +246,12 @@ function deleteUser(user) {
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 bg-white">
-                <tr v-for="user in users.data" :key="user.id" class="transition hover:bg-gray-50">
+              <tbody class="divide-y divide-white/30 bg-white/40 dark:divide-slate-700/60 dark:bg-slate-900/30">
+                <tr
+                  v-for="user in users.data"
+                  :key="user.id"
+                  class="transition hover:bg-white/70 dark:hover:bg-slate-800/60"
+                >
                   <td class="px-5 py-3">
                     <div class="space-y-2">
                       <input

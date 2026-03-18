@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { usStates } from '@/utils/usStates';
 
 const props = defineProps({
   customers: Array,
@@ -168,11 +169,15 @@ function formatFileSize(sizeInBytes) {
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700">State</label>
-                <input
+                <select
                   v-model="form.state"
-                  type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                />
+                  class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                >
+                  <option value="">Select state</option>
+                  <option v-for="stateOption in usStates" :key="stateOption.code" :value="stateOption.code">
+                    {{ stateOption.code }} - {{ stateOption.name }}
+                  </option>
+                </select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700">ZIP</label>
@@ -297,7 +302,7 @@ function formatFileSize(sizeInBytes) {
             <button
               type="submit"
               :disabled="form.processing"
-              class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition disabled:opacity-50"
+              class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition-all duration-150 ease-out active:scale-95 hover:shadow-sm disabled:opacity-50"
             >
               Create Project
             </button>

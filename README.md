@@ -57,6 +57,20 @@ npm install
 npm run dev
 ```
 
+### HTTPS (self-signed or official certificate)
+
+```bash
+cp .env.example .env
+# Optional: set APP_URL=https://<lan-host-or-ip> and FORCE_HTTPS=true
+# Optional: set TLS_CERT_CN and TLS_CERT_SAN for your LAN hostname/IP SAN entries
+
+docker compose up -d --build nginx
+```
+
+- If `docker/nginx/certs/tls.crt` and `docker/nginx/certs/tls.key` exist, nginx uses them (works with official CA certs).
+- If they do not exist, nginx auto-generates a self-signed certificate at startup.
+- `FORCE_HTTPS_REDIRECT=1` redirects HTTP (`:80`) to HTTPS (`:443`); set `0` to keep HTTP available for devices that cannot trust your self-signed cert.
+
 ## Local Development Commands
 
 ### Composer
@@ -113,7 +127,8 @@ Admin users can create, restore, and download JSON backups from the **Admin > Da
 
 From `docker-compose.yml`:
 
-- App (nginx): `http://localhost`
+- App (nginx HTTP): `http://localhost` (redirects to HTTPS)
+- App (nginx HTTPS): `https://localhost`
 - Mailhog UI: `http://localhost:8025`
 - MySQL: `localhost:3306`
 - Redis: `localhost:6379`
@@ -145,6 +160,11 @@ From `database/seeders/DatabaseSeeder.php`:
 - **Markup history** is shown in the workspace with author and timestamp.
 - **Notification center** added to the app layout with unread badge, polling, and mark read / mark all read actions.
 - **Internal submittal notes** are now available on submittal detail pages for team communication.
+- **Customer imports** now include a downloadable CSV template directly on the Customers index page.
+- **State fields** on customer/project create & edit forms are dropdowns (US abbreviations) with backend validation.
+- **Project attachments** now support deletion from the project detail page.
+- **Boost admin workspace** includes MCP activity indicator + live log viewer with reset action.
+- **Drawing request detail** job number now links directly to the related project page.
 
 ## Additional Project Context
 

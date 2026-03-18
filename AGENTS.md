@@ -4,27 +4,28 @@
 
 - **Project**: DrawingFlow
 - **Type**: Laravel 12 monolith with Inertia.js + Vue 3
-- **Backend**: PHP (`composer.json` requires `^8.2`), Laravel Framework `^12.0`
+- **Backend**: PHP `^8.2`, Laravel `^12.0`
 - **Frontend**: Vite 7, Vue 3, Inertia Vue 2, Tailwind CSS 4
-- **Dev infra in repo**: Docker Compose services for `app`, `nginx`, `mysql`, `redis`, `meilisearch`, `mailhog`
-- **Current source roots**: `app/`, `resources/js/`, `routes/`, `database/`, `tests/`
+- **Infrastructure in repo**: Docker Compose services for `app`, `nginx`, `mysql`, `redis`, `meilisearch`, `mailhog`
+- **Runtime model**: Docker app (container-first local development)
+- **Primary source roots**: `app/`, `routes/`, `resources/js/`, `database/`, `tests/`
 
-This repository is **not empty** and contains active application code.
+This repository is not empty and contains active application code.
 
 ---
 
-## Rule Files Found (from requested locations)
+## Rule Files Checked
 
-Checked these locations:
+Checked these user-requested locations:
 
 - `.cursor/rules/*.md` → not found
 - `.cursorrules` → not found
-- `.github/copilot-instructions.md` → not found (`.github/` directory not present)
+- `.github/copilot-instructions.md` → not found
 - `claude.md` → not found
 - `agents.md` (lowercase) → not found
 - `AGENTS.md` (this file) → found
 
-No other rule files were discovered in those requested paths.
+No additional rule files were discovered in those locations.
 
 ---
 
@@ -41,11 +42,11 @@ composer lint:fix
 composer analyse
 ```
 
-### What they do
+### Script behavior
 
 - `composer setup`
   - `composer install`
-  - copy `.env.example` to `.env` if missing
+  - create `.env` from `.env.example` if missing
   - `php artisan key:generate`
   - `php artisan migrate --force`
   - `npm install`
@@ -53,13 +54,15 @@ composer analyse
 - `composer dev`
   - runs concurrently: `php artisan serve`, `php artisan queue:listen --tries=1 --timeout=0`, `php artisan pail --timeout=0`, `npm run dev`
 - `composer test`
-  - clears config then runs `php artisan test`
+  - `php artisan config:clear --ansi`
+  - `php artisan test`
 - `composer lint`
-  - runs Pint in test mode + PHPStan
+  - `vendor/bin/pint --test`
+  - `vendor/bin/phpstan analyse --no-progress --memory-limit=1G`
 - `composer lint:fix`
-  - runs Pint formatter
+  - `vendor/bin/pint`
 - `composer analyse`
-  - runs PHPStan
+  - `vendor/bin/phpstan analyse --no-progress --memory-limit=1G`
 
 ## Frontend scripts (`package.json`)
 
@@ -72,10 +75,10 @@ npm run format
 npm run format:check
 ```
 
-- ESLint scope: `resources/js`
-- Prettier scope: `resources/js/**/*.{js,vue}`
+- ESLint target: `resources/js`
+- Prettier target: `resources/js/**/*.{js,vue}`
 
-## Docker Compose workflow (`docker-compose.yml`)
+## Docker / container workflow (`docker-compose.yml`)
 
 ```bash
 docker compose up -d
@@ -85,172 +88,196 @@ docker compose exec app php artisan migrate
 docker compose exec app php artisan test
 ```
 
-Published ports:
+Published endpoints/ports from compose:
 
-- App (nginx): `http://localhost:8080`
-- MySQL: `3306`
-- Redis: `6379`
-- Meilisearch: `7700`
+- App (nginx): `http://localhost` (port 80)
 - Mailhog UI: `http://localhost:8025`
+- MySQL: `localhost:3306`
+- Redis: `localhost:6379`
+- Meilisearch: `localhost:7700`
 
-## Helper script
+## Utility scripts
 
-`start-and-test.sh` exists and:
+- `start-and-test.sh`
+  - restarts containers, waits for MySQL, runs migrations, then runs `php artisan test --testsuite=Unit`
+- `dev-utility.sh`
+  - interactive menu wrapper for common Docker/Sail, artisan, composer, npm, lint, test, and import commands
 
-- brings containers down/up
-- waits for MySQL
-- runs migrations
-- runs **Unit** test suite (`php artisan test --testsuite=Unit`)
+## Domain-specific command
+
+```bash
+php artisan data:import-legacy-csv
+```
+
+- Implemented by `app/Console/Commands/ImportLegacyCsvData.php`
+- Reads these CSV files from project root:
+  - `Shop Drawing Request.csv`
+  - `Drawing Submittal Log.csv`
+  - `Fabrication Drawing Log.csv`
 
 ---
 
-## Project Structure
+## Code Organization
 
 ## Backend
 
-- `app/Http/Controllers/`
-  - Inertia controllers and auth/admin/profile controllers
-- `app/Http/Requests/`
-  - Form Requests, including nested folders like `Profile/` and `Admin/`
-- `app/Models/`
-  - Domain models: `DrawingRequest`, `DrawingSubmittal`, `FabQueue`, `ProjectAttachment`, etc.
-- `app/Services/`
-  - Business logic services (`DrawingRequestService`, `SubmittalService`, `FabHandoffService`, etc.)
-- `app/Providers/AppServiceProvider.php`
-  - explicit route-model bindings for `submittal` and `fab_queue`
-  - `Gate::define('admin-access', ...)`
+- `app/Http/Controllers/` → HTTP controllers (auth, dashboard, customers, projects, submittals, fab queue, admin)
+- `app/Http/Requests/` → FormRequest validation classes
+- `app/Models/` → Eloquent models for domain entities
+- `app/Services/` → business logic services (`DrawingRequestService`, `SubmittalService`, `FabHandoffService`, etc.)
+- `app/Console/Commands/` → custom artisan command(s), currently legacy CSV import
+- `routes/web.php` → all web routes (guest/auth/admin)
+- `app/Providers/AppServiceProvider.php` → explicit route model bindings and admin gate
 
 ## Frontend
 
-- `resources/js/app.js`
-  - bootstraps Inertia app, Pinia, ZiggyVue, and page resolution via `import.meta.glob`
-- `resources/js/Layouts/`
-  - app shell + guest shell
-- `resources/js/Pages/`
-  - feature pages grouped by domain (Dashboard, DrawingRequests, Submittals, FabQueue, Projects, Customers, Admin, Profile, Auth)
-- `resources/js/Components/`
-  - shared UI components (e.g., `StatusBadge`, `Pagination`, `Modal`, `EmptyState`, `PdfMarkupWorkspace`)
-  - `PdfMarkupWorkspace.vue` is now a substantial review surface with compare mode, import/export, delete/update, history filters, layer visibility toggles, per-page scale calibration, on-canvas editing, and path-based markup tools (`pen`, `polyline`, `polygon`)
-
-## Routing
-
-- `routes/web.php` has all web routes (guest + auth + admin route group)
-- Uses named routes throughout; admin routes are under `admin.` prefix
-- PDF review routes include markup CRUD, markup import/export, and per-page scale CRUD on `submittals/{submittal}/files/{submittalFile}/...`
+- `resources/js/app.js` bootstraps Inertia app with Pinia + Ziggy
+- `resources/js/Layouts/` contains layout shells
+- `resources/js/Pages/` domain pages (`Dashboard`, `DrawingRequests`, `Submittals`, `FabQueue`, `Projects`, `Customers`, `Admin`, `Profile`, `Auth`)
+- `resources/js/Components/` shared UI; includes large `PdfMarkupWorkspace.vue`
 
 ## Data layer
 
-- `database/migrations/` contains Laravel defaults + workflow domain tables + profile/avatar + notifications + submittal notes migrations
-- PDF review now also includes `pdf_markups` and `pdf_page_scales` migrations, including later enum-expansion migrations for new markup types
-- `database/seeders/DatabaseSeeder.php` seeds two users and sample customers/projects/workflows
-- `database/factories/` includes `UserFactory` and `SubmittalNoteFactory`
+- `database/migrations/` includes Laravel defaults plus workflow tables
+- PDF review tables and follow-up enum migrations are present:
+  - `create_pdf_markups_table`
+  - `expand_pdf_markup_types`
+  - `expand_pdf_markup_types_for_paths`
+  - `create_pdf_page_scales_table`
+- `database/seeders/DatabaseSeeder.php` seeds two users, customers, projects, and customer workflows
 
 ## Tests
 
-- `tests/Feature/` includes coverage for profile management, dashboard queue behavior, customer import/filtering, request validation, project attachments, admin user management, notification center, submittal notes, and PDF markup workflows
-- `tests/Feature/SubmittalPdfMarkupTest.php` covers PDF file viewing, markup CRUD, import/export, page-scale persistence, and path-based markup validation
-- `tests/Unit/` currently minimal (`ExampleTest`)
-- `phpunit.xml` uses in-memory sqlite for tests
+- `tests/Feature/` includes domain and UI workflow coverage
+- `tests/Feature/Admin/` has backup and user management tests
+- `tests/Feature/SubmittalPdfMarkupTest.php` covers PDF file access, markup CRUD/import/export, and page scales
+- `tests/Unit/` exists (minimal baseline test present)
+- `phpunit.xml` uses in-memory SQLite (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`)
 
 ---
 
-## Coding Patterns Observed
+## Patterns and Conventions Observed
 
 ## Laravel / backend patterns
 
-- Controllers are generally thin and delegate workflow actions to services.
-- Multi-step business operations use `DB::transaction()` inside services (`app/Services/*.php`).
-- Form Requests are used for validation (example: `app/Http/Requests/DrawingRequestFormRequest.php`).
-- Models frequently include:
+- Controllers are generally thin and delegate business operations to service classes.
+- Multi-step writes are wrapped in `DB::transaction()` in services/commands.
+- Validation uses FormRequest classes and route-level validation behavior.
+- Models commonly define:
   - typed relationship methods
-  - query scopes (e.g., `scopeStatus`, `scopePriority`, `queued`, `active`)
-  - helper/accessor methods (`getStatusLabelAttribute`, `isApproved`, `avatarUrl`)
-- Casts are defined via `casts()` methods rather than `$casts` property in multiple models.
+  - query scopes (for status/priority/etc.)
+  - helper methods/accessors (e.g., status labels)
+- Several models use `protected function casts(): array` rather than `$casts` property.
 
 ## Inertia / Vue patterns
 
 - Vue SFCs use `<script setup>` + Composition API.
-- Page components receive props directly from controller `Inertia::render(...)` payloads.
-- `HandleInertiaRequests` shares:
-  - `auth.user` (flattened useful fields, including `notification_unread_count`)
+- Inertia page resolution uses `resolvePageComponent` with `import.meta.glob('./Pages/**/*.vue')`.
+- Shared Inertia props in `HandleInertiaRequests` include:
+  - `auth.user` with flattened fields
+  - `auth.user.notification_unread_count`
   - `ziggy`
   - `flash.success` / `flash.error`
-- Layout-driven pages (`<AppLayout>`) are standard for authenticated screens.
 
-## Naming/status patterns
+## Routing and naming patterns
 
-- Drawing request numbers: `DR-YYYY-####`
-- Submittal numbers: `SUB-YYYY-####`
-- Fab queue numbers: `FAB-YYYY-####`
-- Status strings are snake_case and domain-specific (examples: `ready_to_submit`, `approved_as_noted`, `revise_and_resubmit`, `field_verify_required`).
+- Named routes are used throughout.
+- Admin routes use `admin.` prefix and `can:admin-access` middleware.
+- Explicit route model bindings exist for `submittal` and `fab_queue`; preserve these parameter names.
+- Numbering formats in domain logic/docs:
+  - Drawing requests: `DR-YYYY-####`
+  - Submittals: `SUB-YYYY-####`
+  - Fab queue: `FAB-YYYY-####`
+
+## PDF workspace domain pattern
+
+- `PdfMarkupWorkspace.vue` supports tools: `circle`, `rectangle`, `cloud`, `pen`, `polyline`, `polygon`, `arrow`, `dimension`, `text`, `highlight`, `stamp`.
+- Backend routes include markup CRUD, import/export, and page-scale CRUD under `submittals/{submittal}/files/{submittalFile}/...`.
+- Tests validate markup type restrictions and shape-specific payload requirements.
 
 ---
 
-## Style & Tooling Conventions
+## Style and Tooling Conventions
 
-From observed config files:
+From config files:
 
 - `.editorconfig`
-  - default: 4 spaces, LF, UTF-8, final newline
+  - default: 4 spaces, LF, UTF-8, trim trailing whitespace, final newline
   - JS/Vue: 2 spaces
   - YAML: 2 spaces
 - `.prettierrc`
-  - single quotes, semicolons, trailing commas (`es5`), print width 100
+  - 2 spaces, single quotes, semicolons, trailing commas (`es5`), print width 100
 - `eslint.config.js`
-  - Flat config
-  - JS recommended + Vue recommended rules
-  - `vue/multi-word-component-names` disabled
+  - flat config
+  - ignores: `public/build/**`, `vendor/**`, `resources/js/ziggy.js`
+  - Vue recommended flat config with multiple Vue formatting rules disabled
 
 ---
 
-## Testing Conventions Observed
+## Testing Guidance (Observed)
 
-- PHPUnit class-based tests (`Tests\Feature\...`, `Tests\Unit\...`).
-- Feature tests commonly use `RefreshDatabase`.
-- Inertia responses are asserted with `Inertia\Testing\AssertableInertia`.
-- Mix of factory usage and direct `Model::create()` in feature tests.
-- Profile/file tests use `Storage::fake('public')` + `UploadedFile::fake()`.
-
-Useful commands:
+Preferred in this repo (Docker app runtime):
 
 ```bash
-php artisan test
-php artisan test --testsuite=Feature
-php artisan test --testsuite=Unit
-php artisan test tests/Feature/Profile/ProfileManagementTest.php
+docker compose exec app php artisan test
+docker compose exec app php artisan test --testsuite=Feature
+docker compose exec app php artisan test --testsuite=Unit
+docker compose exec app php artisan test tests/Feature/Profile/ProfileManagementTest.php
 ```
 
----
+Host equivalents also exist (`php artisan ...`) but depend on compatible local PHP/composer platform requirements.
 
-## Important Gotchas (Observed)
+Observed patterns in tests:
 
-1. **Rule-file discovery paths are mostly absent**
-   - The specific requested agent rule file locations are not present (except `AGENTS.md`).
-
-2. **README contains mixed command styles**
-   - Most README Docker commands use `docker compose`, but the Testing section still shows `docker-compose` examples.
-
-3. **No CI workflows in repository**
-   - `.github/workflows/` is not present; do not assume automated remote checks.
-
-4. **Route model binding is explicit for non-standard parameter names**
-   - `submittal` and `fab_queue` bindings are registered in `app/Providers/AppServiceProvider.php`; preserve parameter names in routes/controllers.
-
-5. **Historical enum migrations have been extended over time**
-   - `pdf_markups.markup_type` has follow-up MySQL enum expansion migrations. When adding new markup tools, add a new forward migration instead of relying only on edits to older migrations.
+- Feature tests often use `RefreshDatabase`.
+- File-heavy tests use `Storage::fake(...)` and `UploadedFile::fake()`.
+- Submittal PDF tests use JSON route assertions and database assertions for workflow behavior.
 
 ---
 
-## Practical Agent Notes for This Repo
+## Important Gotchas
 
-- Prefer adding workflow logic to `app/Services` when it changes business state across models.
-- Keep controller responses Inertia-first and return named route redirects with flash messages.
-- Reuse existing domain status vocabulary exactly; many UI badges and dashboard filters depend on it.
-- When adding dashboard queue logic, maintain `queue_filter` whitelist handling in `app/Http/Controllers/DashboardController.php`.
-- For profile/avatar behavior, keep storage disk usage consistent with `public` disk and existing `avatar_path` conventions.
-- Notification dropdown polls `/notifications`; keep payload shape from `NotificationController` stable for layout consumers.
-- Submittal collaboration uses `submittal_notes`; prefer `submittal->submittalNotes()->with('user')` for page hydration.
-- Validate route parameter naming against `routes/web.php` + `AppServiceProvider` before refactors.
-- For PDF review work, keep frontend tool names aligned with backend `markup_type` validation and MySQL enum migrations (`circle`, `arrow`, `text`, `highlight`, `stamp`, `dimension`, `rectangle`, `cloud`, `pen`, `polyline`, `polygon`).
-- Per-page PDF calibration is persisted separately from markups through `page-scales` routes; measurement features should read page scale by `page_number`, not from individual markup payloads.
-- The current frontend quality gate is `npm run lint:check` using ESLint flat config over `resources/js`; do not reintroduce deprecated `.eslintignore` or `--ext` usage.
+1. **No additional rule files in requested locations**
+   - Only `AGENTS.md` exists among the specified agent-rule paths.
+
+2. **No repository CI workflow config observed**
+   - `.github/workflows/` was not found; do not assume CI checks run remotely.
+
+3. **Route-model binding depends on non-standard parameter names**
+   - `submittal` and `fab_queue` bindings are explicit in `AppServiceProvider`; changing param names can break resolution.
+
+4. **PDF markup types were extended through follow-up migrations**
+   - Enum changes are represented by newer forward migrations; preserve this pattern when adding new types.
+
+5. **Submittal-file routes enforce ownership relationships**
+   - Tests verify a file/markup must belong to the routed submittal/submittal file context.
+
+6. **Legacy import command expects exact CSV filenames at repo root**
+   - Missing/renamed files will break import.
+
+7. **Host PHP can mismatch composer platform requirements**
+   - Observed locally: host `php artisan test` fails with Composer platform check while `docker compose exec app php artisan test --testsuite=Unit` passes.
+   - Prefer running artisan/composer via Docker container in this project.
+
+8. **Boost MCP tooling is environment-gated**
+   - `laravel/boost` MCP registration depends on local/debug context in `BoostServiceProvider::shouldRun()`.
+   - Running Boost MCP commands may require `APP_ENV=local` and `APP_DEBUG=true` in container executions.
+
+---
+
+## Practical Notes for Future Agents
+
+- Prefer service-layer changes (`app/Services`) for business state transitions.
+- Keep controllers thin and return named-route redirects / Inertia responses consistent with existing patterns.
+- Reuse existing status vocabulary and route names to avoid breaking filters/UI badges/tests.
+- For dashboard, notifications, and profile work, preserve shared Inertia payload shape in `HandleInertiaRequests`.
+- For PDF features, keep frontend tool names, backend validation, database enum values, and tests aligned.
+- For calibration/measurement features, use page-scale routes/data (`page_number`) rather than embedding scale assumptions in individual markups.
+- Customers and projects enforce US state abbreviations (`app/Support/UsStates.php`) via FormRequests; keep form dropdown options and validation list aligned.
+- Project attachments now include a delete path (`projects.attachments.destroy`) and should remove both DB records and stored files.
+- Admin Boost log viewer merges browser logs with MCP status-check events and supports reset via admin routes.
+
+## Operator Preferences (3/17/2026)
+
+- Rebuild the app and clear cache after changes.
+- Never perform changes that risk existing production data, especially user passwords.

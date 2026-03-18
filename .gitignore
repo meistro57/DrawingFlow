@@ -44,3 +44,7 @@ CLAUDE.md
 
 # Windows metadata artifacts
 *:Zone.Identifier
+
+# Local TLS certificates
+/docker/nginx/certs/*
+!/docker/nginx/certs/.gitkeep

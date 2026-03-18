@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\AgentFlowController;
+use App\Http\Controllers\Admin\BoostController;
 use App\Http\Controllers\Admin\DataBackupController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\LoginController;
@@ -43,11 +45,13 @@ Route::middleware('auth')->group(function () {
     // Customers
     Route::resource('customers', CustomerController::class);
     Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
+    Route::get('customers/import/template', [CustomerController::class, 'downloadImportTemplate'])->name('customers.import.template');
 
     // Projects
     Route::resource('projects', ProjectController::class);
     Route::get('projects/{project}/attachments/{attachment}/view', [ProjectAttachmentController::class, 'view'])->name('projects.attachments.view');
     Route::get('projects/{project}/attachments/{attachment}/download', [ProjectAttachmentController::class, 'download'])->name('projects.attachments.download');
+    Route::delete('projects/{project}/attachments/{attachment}', [ProjectAttachmentController::class, 'destroy'])->name('projects.attachments.destroy');
 
     // Drawing Requests
     Route::resource('drawing-requests', DrawingRequestController::class);
@@ -91,6 +95,12 @@ Route::middleware('auth')->group(function () {
         Route::post('users', [UserManagementController::class, 'store'])->name('users.store');
         Route::put('users/{user}', [UserManagementController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+
+        Route::get('boost', [BoostController::class, 'index'])->name('boost.index');
+        Route::get('boost/mcp-status', [BoostController::class, 'mcpStatus'])->name('boost.mcp-status');
+        Route::get('boost/browser-logs', [BoostController::class, 'browserLogs'])->name('boost.browser-logs');
+        Route::delete('boost/browser-logs', [BoostController::class, 'clearBrowserLogs'])->name('boost.browser-logs.clear');
+        Route::get('agent-flow', [AgentFlowController::class, 'index'])->name('agent-flow.index');
 
         Route::get('backups', [DataBackupController::class, 'index'])->name('backups.index');
         Route::post('backups', [DataBackupController::class, 'store'])->name('backups.store');

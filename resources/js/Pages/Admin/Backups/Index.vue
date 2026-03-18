@@ -53,22 +53,36 @@ function formatSize(size) {
 
     <div class="py-8">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="mb-6 flex items-center justify-between gap-3">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">Data Backup & Restore</h1>
-            <p class="mt-1 text-sm text-gray-500">Create backups and restore system data.</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">Data Backup & Restore</h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">Create backups and restore system data.</p>
           </div>
-          <Link
-            :href="route('admin.users.index')"
-            class="inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-700 hover:bg-gray-50"
-          >
-            User Control
-          </Link>
+          <div class="flex items-center gap-2">
+            <Link
+              :href="route('admin.users.index')"
+              class="inline-flex items-center rounded-md border border-white/30 bg-white/40 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 backdrop-blur-md transition hover:bg-white/60 dark:border-slate-600/60 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-900/60"
+            >
+              User Control
+            </Link>
+            <Link
+              :href="route('admin.boost.index')"
+              class="inline-flex items-center rounded-md border border-white/30 bg-white/40 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 backdrop-blur-md transition hover:bg-white/60 dark:border-slate-600/60 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-900/60"
+            >
+              Boost
+            </Link>
+            <Link
+              :href="route('admin.agent-flow.index')"
+              class="inline-flex items-center rounded-md border border-white/30 bg-white/40 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 backdrop-blur-md transition hover:bg-white/60 dark:border-slate-600/60 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-900/60"
+            >
+              Agent Flow
+            </Link>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <form
-            class="rounded-lg border border-gray-200 bg-white shadow-sm"
+            class="rounded-2xl border border-white/40 bg-white/60 shadow-xl shadow-slate-200/30 backdrop-blur-lg dark:border-slate-700/60 dark:bg-slate-900/50 dark:shadow-black/30"
             @submit.prevent="createBackup"
           >
             <div class="p-5">
@@ -79,7 +93,7 @@ function formatSize(size) {
                 Generate a JSON snapshot of current application data.
               </p>
             </div>
-            <div class="flex justify-end border-t border-gray-200 bg-gray-50 px-5 py-3">
+            <div class="flex justify-end border-t border-white/40 bg-white/40 px-5 py-3 dark:border-slate-700/60 dark:bg-slate-900/40">
               <button
                 type="submit"
                 :disabled="createBackupForm.processing"
@@ -91,7 +105,7 @@ function formatSize(size) {
           </form>
 
           <form
-            class="rounded-lg border border-gray-200 bg-white shadow-sm"
+            class="rounded-2xl border border-white/40 bg-white/60 shadow-xl shadow-slate-200/30 backdrop-blur-lg dark:border-slate-700/60 dark:bg-slate-900/50 dark:shadow-black/30"
             @submit.prevent="submitRestore"
           >
             <div class="p-5">
@@ -113,7 +127,7 @@ function formatSize(size) {
                 </p>
               </div>
             </div>
-            <div class="flex justify-end border-t border-gray-200 bg-gray-50 px-5 py-3">
+            <div class="flex justify-end border-t border-white/40 bg-white/40 px-5 py-3 dark:border-slate-700/60 dark:bg-slate-900/40">
               <button
                 type="submit"
                 :disabled="restoreForm.processing || !restoreForm.backup_file"
@@ -125,8 +139,8 @@ function formatSize(size) {
           </form>
         </div>
 
-        <div class="mt-6 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-          <div class="border-b border-gray-200 px-5 py-4">
+        <div class="mt-6 overflow-hidden rounded-2xl border border-white/40 bg-white/60 shadow-xl shadow-slate-200/30 backdrop-blur-lg dark:border-slate-700/60 dark:bg-slate-900/50 dark:shadow-black/30">
+          <div class="border-b border-white/40 px-5 py-4 dark:border-slate-700/60">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-700">
               Available Backups
             </h2>
@@ -137,8 +151,8 @@ function formatSize(size) {
           </div>
 
           <div v-else class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
+            <table class="min-w-full divide-y divide-white/40 dark:divide-slate-700/60">
+              <thead class="bg-white/60 dark:bg-slate-900/60">
                 <tr>
                   <th
                     class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600"
@@ -162,11 +176,11 @@ function formatSize(size) {
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 bg-white">
+              <tbody class="divide-y divide-white/30 bg-white/40 dark:divide-slate-700/60 dark:bg-slate-900/30">
                 <tr
                   v-for="backup in backups"
                   :key="backup.name"
-                  class="transition hover:bg-gray-50"
+                  class="transition hover:bg-white/70 dark:hover:bg-slate-800/60"
                 >
                   <td class="px-5 py-3 text-sm text-gray-700">{{ backup.name }}</td>
                   <td class="px-5 py-3 text-sm text-gray-700">
@@ -176,7 +190,7 @@ function formatSize(size) {
                   <td class="px-5 py-3">
                     <a
                       :href="backup.download_url"
-                      class="inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-700 hover:bg-gray-50"
+                      class="inline-flex items-center rounded-md border border-white/30 bg-white/50 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 backdrop-blur-md transition hover:bg-white/70 dark:border-slate-600/60 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-900/60"
                     >
                       Download
                     </a>

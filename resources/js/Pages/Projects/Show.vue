@@ -26,6 +26,18 @@ function deleteProject() {
   }
 }
 
+function deleteAttachment(attachment) {
+  if (confirm(`Delete attachment "${attachment.original_filename}"?`)) {
+    router.delete(route('projects.attachments.destroy', [props.project.id, attachment.id]), {
+      onSuccess: () => {
+        if (selectedPdfAttachmentId.value === attachment.id) {
+          selectedPdfAttachmentId.value = null;
+        }
+      },
+    });
+  }
+}
+
 function openPdfViewer(attachmentId) {
   selectedPdfAttachmentId.value = attachmentId;
 }
@@ -86,7 +98,7 @@ function formatFileSize(sizeInBytes) {
           <div class="flex space-x-3">
             <Link
               :href="route('drawing-requests.create', { project_id: project.id })"
-              class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition"
+              class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition-all duration-150 ease-out active:scale-95 hover:shadow-sm"
             >
               New Request
             </Link>
@@ -242,6 +254,13 @@ function formatFileSize(sizeInBytes) {
                     >
                       Download
                     </Link>
+                    <button
+                      type="button"
+                      class="text-red-600 hover:text-red-800"
+                      @click="deleteAttachment(attachment)"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -324,7 +343,7 @@ function formatFileSize(sizeInBytes) {
               <tr
                 v-for="request in project.drawing_requests"
                 :key="request.id"
-                class="hover:bg-gray-50"
+                class="hover:bg-gray-50 transition-colors duration-150 ease-out"
               >
                 <td class="px-5 py-3 whitespace-nowrap text-sm font-medium">
                   <Link

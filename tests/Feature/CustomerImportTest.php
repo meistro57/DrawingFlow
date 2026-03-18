@@ -161,6 +161,22 @@ CSV);
         ])->assertSessionHasErrors(['file']);
     }
 
+    public function test_authenticated_user_can_download_customer_import_template(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('customers.import.template'));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('content-disposition', 'attachment; filename=customers-import-template.csv');
+
+        $content = str_replace("\r\n", "\n", $response->streamedContent());
+
+        $this->assertStringContainsString('name,email,phone,address,city,state,zip,country,notes,active', $content);
+        $this->assertStringContainsString('"Acme Steel",estimating@acmesteel.com,555-0100,"123 Industry Way",Denver,CO,80202,USA,"Primary structural steel partner",1', $content);
+    }
+
     private function csvFile(string $contents): UploadedFile
     {
         return UploadedFile::fake()->createWithContent('customers.csv', $contents);

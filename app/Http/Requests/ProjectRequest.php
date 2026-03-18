@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\UsStates;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +24,7 @@ class ProjectRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:100'],
-            'state' => ['nullable', 'string', 'max:50'],
+            'state' => ['nullable', Rule::in(UsStates::abbreviations())],
             'zip' => ['nullable', 'string', 'max:20'],
             'start_date' => ['nullable', 'date'],
             'target_completion_date' => ['nullable', 'date', 'after_or_equal:start_date'],

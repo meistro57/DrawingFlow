@@ -186,7 +186,14 @@ const priorityClasses = {
                 <div class="px-6 py-4 grid grid-cols-3 gap-4">
                   <dt class="text-sm font-medium text-gray-500">Job Number</dt>
                   <dd class="text-sm text-gray-900 col-span-2">
-                    {{ drawingRequest.job_number || '-' }}
+                    <Link
+                      v-if="drawingRequest.project"
+                      :href="route('projects.show', drawingRequest.project.id)"
+                      class="text-primary-600 hover:text-primary-800"
+                    >
+                      {{ drawingRequest.job_number || drawingRequest.project.project_number || '-' }}
+                    </Link>
+                    <span v-else>{{ drawingRequest.job_number || '-' }}</span>
                   </dd>
                 </div>
                 <div class="px-6 py-4 grid grid-cols-3 gap-4">
@@ -253,7 +260,7 @@ const priorityClasses = {
                   <tr
                     v-for="submittal in drawingRequest.submittals"
                     :key="submittal.id"
-                    class="hover:bg-gray-50"
+                    class="hover:bg-gray-50 transition-colors duration-150 ease-out"
                   >
                     <td class="px-5 py-3 text-sm">
                       <Link
@@ -325,7 +332,7 @@ const priorityClasses = {
         <button
           @click="assignUser"
           :disabled="!assignUserId"
-          class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition disabled:opacity-50"
+          class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition-all duration-150 ease-out active:scale-95 hover:shadow-sm disabled:opacity-50"
         >
           Assign
         </button>

@@ -29,7 +29,7 @@ function deleteProject(project) {
           </div>
           <Link
             :href="route('projects.create')"
-            class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition"
+            class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition-all duration-150 ease-out active:scale-95 hover:shadow-sm"
           >
             Add Project
           </Link>
@@ -77,7 +77,7 @@ function deleteProject(project) {
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="project in projects.data" :key="project.id" class="hover:bg-gray-50">
+              <tr v-for="project in projects.data" :key="project.id" class="hover:bg-gray-50 transition-colors duration-150 ease-out">
                 <td class="px-5 py-3 whitespace-nowrap text-sm font-medium">
                   <Link
                     :href="route('projects.show', project.id)"
@@ -128,7 +128,7 @@ function deleteProject(project) {
             <template #action>
               <Link
                 :href="route('projects.create')"
-                class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition"
+                class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition-all duration-150 ease-out active:scale-95 hover:shadow-sm"
               >
                 Add Project
               </Link>

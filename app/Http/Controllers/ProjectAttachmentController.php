@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\ProjectAttachment;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -42,6 +43,20 @@ class ProjectAttachmentController extends Controller
             Storage::disk('local')->path($attachment->file_path),
             $attachment->original_filename
         );
+    }
+
+    public function destroy(Project $project, ProjectAttachment $attachment): RedirectResponse
+    {
+        $this->ensureAttachmentBelongsToProject($project, $attachment);
+
+        if (Storage::disk('local')->exists($attachment->file_path)) {
+            Storage::disk('local')->delete($attachment->file_path);
+        }
+
+        $attachment->delete();
+
+        return redirect()->route('projects.show', $project)
+            ->with('success', 'Attachment deleted successfully.');
     }
 
     private function ensureAttachmentBelongsToProject(Project $project, ProjectAttachment $attachment): void

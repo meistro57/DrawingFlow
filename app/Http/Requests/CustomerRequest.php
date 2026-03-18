@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Support\UsStates;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CustomerRequest extends FormRequest
 {
@@ -19,7 +21,7 @@ class CustomerRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:100'],
-            'state' => ['nullable', 'string', 'max:50'],
+            'state' => ['nullable', Rule::in(UsStates::abbreviations())],
             'zip' => ['nullable', 'string', 'max:20'],
             'country' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string'],

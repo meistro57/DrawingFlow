@@ -272,7 +272,13 @@ function activityLabel(customer) {
                 {{ importForm.errors.file }}
               </p>
             </div>
-            <div>
+            <div class="flex items-center gap-2">
+              <a
+                :href="route('customers.import.template')"
+                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 font-semibold text-xs uppercase tracking-widest text-gray-700 transition hover:bg-gray-50"
+              >
+                Download Template
+              </a>
               <button
                 type="submit"
                 :disabled="importForm.processing || !importForm.file"

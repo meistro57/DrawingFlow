@@ -149,8 +149,8 @@ watch(theme, (nextTheme) => {
           <div class="flex">
             <!-- Logo -->
             <div class="shrink-0 flex items-center">
-              <Link href="/" class="text-xl font-bold text-primary-600 dark:text-primary-400">
-                DrawingFlow
+              <Link href="/" class="inline-flex items-center text-primary-600 dark:text-primary-400">
+                <img src="/DrawingFlowLogo.png" alt="DrawingFlow logo" class="mt-8 h-20 w-auto" />
               </Link>
             </div>
 
@@ -160,7 +160,7 @@ watch(theme, (nextTheme) => {
                 v-for="item in navigation"
                 :key="item.name"
                 :href="item.href"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-150 ease-out active:scale-95"
                 :class="[
                   isActive(item)
                     ? 'text-primary-700 bg-primary-50 dark:text-primary-300 dark:bg-slate-800'
@@ -169,6 +169,20 @@ watch(theme, (nextTheme) => {
               >
                 {{ item.name }}
               </Link>
+              <a
+                href="https://github.com/meistro57/DrawingFlow/issues/new"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-150 ease-out active:scale-95 text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800"
+                aria-label="Create GitHub issue"
+              >
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path
+                    d="M12 2C6.477 2 2 6.486 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.009-.866-.014-1.699-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.071 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.221-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.03-2.688-.103-.253-.447-1.272.098-2.651 0 0 .84-.269 2.75 1.026a9.564 9.564 0 012.5-.336c.848.004 1.703.114 2.5.336 1.909-1.295 2.747-1.026 2.747-1.026.547 1.379.203 2.398.1 2.651.641.7 1.028 1.595 1.028 2.688 0 3.848-2.338 4.695-4.566 4.943.359.31.678.922.678 1.858 0 1.341-.012 2.423-.012 2.753 0 .268.18.579.688.481A10.019 10.019 0 0022 12.017C22 6.486 17.523 2 12 2z"
+                  />
+                </svg>
+                <span class="sr-only">Issues</span>
+              </a>
             </div>
           </div>
 
@@ -177,7 +191,7 @@ watch(theme, (nextTheme) => {
             <div class="relative">
               <button
                 type="button"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-all duration-150 ease-out hover:bg-gray-50 active:scale-90 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 @click="toggleNotifications"
               >
                 <span class="sr-only">Notifications</span>
@@ -260,14 +274,14 @@ watch(theme, (nextTheme) => {
             </div>
             <button
               type="button"
-              class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-600 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-600 transition-all duration-150 ease-out hover:bg-gray-50 active:scale-95 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
               @click="toggleTheme"
             >
               {{ isDarkMode ? 'Light' : 'Dark' }}
             </button>
             <Link
               :href="route('profile.edit')"
-              class="inline-flex items-center gap-3 rounded-full border border-transparent px-2 py-1 transition hover:bg-gray-100 dark:hover:bg-slate-800"
+              class="inline-flex items-center gap-3 rounded-full border border-transparent px-2 py-1 transition-all duration-150 ease-out hover:bg-gray-100 active:scale-95 dark:hover:bg-slate-800"
             >
               <span
                 class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-100"
@@ -284,7 +298,7 @@ watch(theme, (nextTheme) => {
             </Link>
             <button
               @click="logout"
-              class="text-sm text-gray-500 hover:text-gray-700 transition-colors dark:text-slate-400 dark:hover:text-slate-200"
+              class="text-sm text-gray-500 hover:text-gray-700 transition-all duration-150 ease-out active:scale-95 dark:text-slate-400 dark:hover:text-slate-200"
             >
               Logout
             </button>
@@ -333,6 +347,14 @@ watch(theme, (nextTheme) => {
           >
             {{ item.name }}
           </Link>
+          <a
+            href="https://github.com/meistro57/DrawingFlow/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="block px-3 py-2 text-base font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800"
+          >
+            Issues
+          </a>
         </div>
         <div class="pt-4 pb-3 border-t border-gray-200 px-4 dark:border-slate-800">
           <button
