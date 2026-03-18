@@ -65,9 +65,11 @@ Route::middleware('auth')->group(function () {
     Route::get('submittals/{submittal}', [SubmittalController::class, 'show'])->name('submittals.show');
     Route::delete('submittals/{submittal}', [SubmittalController::class, 'destroy'])->name('submittals.destroy');
     Route::post('submittals/from-request/{drawing_request}', [SubmittalController::class, 'createFromRequest'])->name('submittals.create-from-request');
+    Route::patch('submittals/{submittal}/purpose', [SubmittalController::class, 'updatePurpose'])->name('submittals.purpose.update');
     Route::post('submittals/{submittal}/submit', [SubmittalController::class, 'submit'])->name('submittals.submit');
     Route::post('submittals/{submittal}/process-approval', [SubmittalController::class, 'processApproval'])->name('submittals.process-approval');
     Route::post('submittals/{submittal}/create-revision', [SubmittalController::class, 'createRevision'])->name('submittals.create-revision');
+    Route::post('submittals/{submittal}/files', [SubmittalFileController::class, 'store'])->name('submittals.files.store');
     Route::get('submittals/{submittal}/files/{submittalFile}/view', [SubmittalFileController::class, 'view'])->name('submittals.files.view');
     Route::get('submittals/{submittal}/files/{submittalFile}/download', [SubmittalFileController::class, 'download'])->name('submittals.files.download');
     Route::get('submittals/{submittal}/files/{submittalFile}/markups', [SubmittalPdfMarkupController::class, 'index'])->name('submittals.files.markups.index');

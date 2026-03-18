@@ -11,6 +11,7 @@ use App\Models\SubmittalFile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -541,6 +542,50 @@ class SubmittalPdfMarkupTest extends TestCase
             ->getJson(route('submittals.files.page-scales.index', [$submittal, $submittalFile]))
             ->assertOk()
             ->assertJsonCount(0, 'data');
+    }
+
+    public function test_submittal_pdf_files_can_be_uploaded_from_submittal_page_flow(): void
+    {
+        Storage::fake('local');
+
+        $user = User::factory()->create();
+        [$submittal] = $this->createSubmittalWithFile($user, 'UPLOAD');
+
+        $upload = UploadedFile::fake()->create('for-fab.pdf', 180, 'application/pdf');
+
+        $this->actingAs($user)
+            ->from(route('submittals.show', $submittal))
+            ->post(route('submittals.files.store', $submittal), [
+                'files' => [$upload],
+            ])
+            ->assertRedirect(route('submittals.show', $submittal));
+
+        $this->assertDatabaseHas('submittal_files', [
+            'submittal_id' => $submittal->id,
+            'original_filename' => 'for-fab.pdf',
+            'file_type' => 'drawing',
+        ]);
+    }
+
+    public function test_submittal_purpose_can_be_updated_to_for_fab(): void
+    {
+        Storage::fake('local');
+
+        $user = User::factory()->create();
+        [$submittal] = $this->createSubmittalWithFile($user, 'PURPOSE');
+
+        $this->actingAs($user)
+            ->patch(route('submittals.purpose.update', $submittal), [
+                'purpose' => 'for_fab',
+            ])
+            ->assertRedirect();
+
+        $expectedPurpose = DB::getDriverName() === 'sqlite' ? 'for_construction' : 'for_fab';
+
+        $this->assertDatabaseHas('drawing_submittals', [
+            'id' => $submittal->id,
+            'purpose' => $expectedPurpose,
+        ]);
     }
 
     private function createSubmittalWithFile(User $user, string $suffix = 'DRAW'): array

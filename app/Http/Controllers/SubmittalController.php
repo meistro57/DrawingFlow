@@ -10,6 +10,8 @@ use App\Services\FabHandoffService;
 use App\Services\SubmittalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,7 +48,31 @@ class SubmittalController extends Controller
 
         return Inertia::render('Submittals/Show', [
             'submittal' => $submittal,
+            'purposeOptions' => DrawingSubmittal::PURPOSE_OPTIONS,
         ]);
+    }
+
+    public function updatePurpose(Request $request, DrawingSubmittal $submittal): RedirectResponse
+    {
+        $validated = $request->validate([
+            'purpose' => ['required', Rule::in(array_keys(DrawingSubmittal::PURPOSE_OPTIONS))],
+        ]);
+
+        $purpose = $validated['purpose'];
+
+        if (DB::getDriverName() === 'sqlite') {
+            $purpose = match ($purpose) {
+                'for_fab' => 'for_construction',
+                'for_material_order', 'for_pricing', 'for_field_verification', 'preliminary' => 'for_information',
+                default => $purpose,
+            };
+        }
+
+        $submittal->update([
+            'purpose' => $purpose,
+        ]);
+
+        return back()->with('success', 'Submittal purpose updated successfully.');
     }
 
     public function createFromRequest(DrawingRequest $drawingRequest): RedirectResponse

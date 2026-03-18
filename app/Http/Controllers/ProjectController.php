@@ -60,7 +60,10 @@ class ProjectController extends Controller
         $project->load([
             'customer',
             'drawingRequests' => fn ($q) => $q->with('assignedTo')->latest()->take(10),
-            'attachments' => fn ($q) => $q->with('uploadedBy:id,name')->latest(),
+            'attachments' => fn ($q) => $q->with('uploadedBy:id,name')
+                ->orderBy('document_key')
+                ->orderByDesc('version_number')
+                ->orderByDesc('uploaded_at'),
         ]);
         $project->loadCount(['drawingRequests', 'submittals', 'fabQueueEntries']);
 

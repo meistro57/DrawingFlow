@@ -4,11 +4,41 @@ namespace App\Http\Controllers;
 
 use App\Models\DrawingSubmittal;
 use App\Models\SubmittalFile;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SubmittalFileController extends Controller
 {
+    public function store(Request $request, DrawingSubmittal $submittal): RedirectResponse
+    {
+        $validated = $request->validate([
+            'files' => ['required', 'array', 'min:1'],
+            'files.*' => ['file', 'mimes:pdf', 'max:20480'],
+        ]);
+
+        foreach ($validated['files'] as $file) {
+            $storedPath = $file->store("submittal-files/{$submittal->id}");
+
+            SubmittalFile::create([
+                'submittal_id' => $submittal->id,
+                'file_type' => 'drawing',
+                'filename' => basename($storedPath),
+                'original_filename' => $file->getClientOriginalName(),
+                'file_path' => $storedPath,
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getClientMimeType(),
+                'version' => 1,
+                'is_current' => true,
+                'uploaded_by_user_id' => (int) $request->user()->id,
+                'uploaded_at' => now(),
+            ]);
+        }
+
+        return back()->with('success', 'PDF file(s) uploaded successfully.');
+    }
+
     public function view(DrawingSubmittal $submittal, SubmittalFile $submittalFile): BinaryFileResponse
     {
         $this->ensureSubmittalFileBelongsToSubmittal($submittal, $submittalFile);

@@ -13,6 +13,18 @@ class DrawingSubmittal extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public const PURPOSE_OPTIONS = [
+        'for_fab' => 'FOR FAB',
+        'for_approval' => 'For Approval',
+        'for_material_order' => "For Mat'l. Order",
+        'for_pricing' => 'For Pricing',
+        'for_field_verification' => 'For field Verification',
+        'preliminary' => 'Preliminary',
+        'for_information' => 'For Information',
+        'for_construction' => 'For Construction',
+        'resubmittal' => 'Resubmittal',
+    ];
+
     protected $fillable = [
         'submittal_number',
         'drawing_request_id',
@@ -127,6 +139,11 @@ class DrawingSubmittal extends Model
     public function isSubmitted(): bool
     {
         return $this->status === 'submitted';
+    }
+
+    public function getPurposeLabelAttribute(): string
+    {
+        return self::PURPOSE_OPTIONS[$this->purpose] ?? ucfirst(str_replace('_', ' ', $this->purpose));
     }
 
     public function getStatusLabelAttribute(): string

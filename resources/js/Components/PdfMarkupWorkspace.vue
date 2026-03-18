@@ -11,9 +11,13 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  initialFileId: {
+    type: Number,
+    default: null,
+  },
 });
 
-const selectedFileId = ref(null);
+const selectedFileId = ref(props.initialFileId);
 const markups = ref([]);
 const pageScales = ref([]);
 const activeTool = ref('circle');
@@ -1318,10 +1322,17 @@ watch(
     }
 
     if (!nextFiles.some((file) => file.id === selectedFileId.value)) {
-      selectedFileId.value = nextFiles[0].id;
+      selectedFileId.value = null;
     }
   },
   { immediate: true }
+);
+
+watch(
+  () => props.initialFileId,
+  (nextInitialFileId) => {
+    selectedFileId.value = nextInitialFileId;
+  }
 );
 
 watch(

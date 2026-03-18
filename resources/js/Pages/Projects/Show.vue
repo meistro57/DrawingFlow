@@ -202,6 +202,11 @@ function formatFileSize(sizeInBytes) {
                   <th
                     class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                   >
+                    Version
+                  </th>
+                  <th
+                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
                     Type
                   </th>
                   <th
@@ -229,6 +234,15 @@ function formatFileSize(sizeInBytes) {
                 >
                   <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
                     {{ attachment.original_filename }}
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
+                    <span class="font-medium text-gray-700">v{{ attachment.version_number || 1 }}</span>
+                    <span
+                      v-if="attachment.is_latest"
+                      class="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                    >
+                      Latest
+                    </span>
                   </td>
                   <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
                     {{ attachment.mime_type || '-' }}

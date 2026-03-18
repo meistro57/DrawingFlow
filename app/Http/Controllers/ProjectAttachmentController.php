@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\ProjectAttachment;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -49,11 +50,32 @@ class ProjectAttachmentController extends Controller
     {
         $this->ensureAttachmentBelongsToProject($project, $attachment);
 
-        if (Storage::disk('local')->exists($attachment->file_path)) {
-            Storage::disk('local')->delete($attachment->file_path);
-        }
+        DB::transaction(function () use ($attachment): void {
+            $attachment = ProjectAttachment::query()
+                ->whereKey($attachment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $attachment->delete();
+            if ($attachment->is_latest) {
+                $previousVersion = ProjectAttachment::query()
+                    ->where('project_id', $attachment->project_id)
+                    ->where('document_key', $attachment->document_key)
+                    ->where('id', '!=', $attachment->id)
+                    ->orderByDesc('version_number')
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($previousVersion !== null) {
+                    $previousVersion->update(['is_latest' => true]);
+                }
+            }
+
+            if (Storage::disk('local')->exists($attachment->file_path)) {
+                Storage::disk('local')->delete($attachment->file_path);
+            }
+
+            $attachment->delete();
+        });
 
         return redirect()->route('projects.show', $project)
             ->with('success', 'Attachment deleted successfully.');

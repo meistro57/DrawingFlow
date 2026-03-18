@@ -73,4 +73,34 @@ class StateAbbreviationValidationTest extends TestCase
             'state' => 'TX',
         ]);
     }
+
+    public function test_project_update_to_completed_redirects_without_server_error(): void
+    {
+        $user = User::factory()->create();
+        $customer = Customer::create([
+            'name' => 'Completion Customer',
+            'active' => true,
+        ]);
+        $project = Project::create([
+            'project_number' => 'STATE-003',
+            'name' => 'Completion Project',
+            'customer_id' => $customer->id,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($user)
+            ->put(route('projects.update', $project), [
+                'project_number' => 'STATE-003',
+                'name' => 'Completion Project',
+                'customer_id' => $customer->id,
+                'status' => 'completed',
+                'state' => 'TX',
+            ])
+            ->assertRedirect(route('projects.show', $project));
+
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            'status' => 'completed',
+        ]);
+    }
 }

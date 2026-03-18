@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
@@ -9,9 +9,17 @@ import { formatDisplayDateTime } from '@/utils/dateFormatting';
 
 const props = defineProps({
   submittal: Object,
+  purposeOptions: Object,
 });
 
 const showApprovalModal = ref(false);
+const activeMarkupFileId = ref(null);
+const purposeForm = ref({
+  purpose: props.submittal.purpose || 'for_approval',
+});
+const purposeUpdateInProgress = ref(false);
+const selectedUploadFiles = ref([]);
+const isUploadingFiles = ref(false);
 const submittalNotes = ref(props.submittal.submittal_notes ?? []);
 const noteForm = ref({
   message: '',
@@ -98,6 +106,69 @@ const approvalTypeLabels = {
   rejected: 'Rejected',
   field_verify_required: 'Field Verify Required',
 };
+
+const submitButtonLabel = computed(() => {
+  const purposeLabel = props.purposeOptions?.[purposeForm.value.purpose] || 'For Approval';
+
+  return `Submit ${purposeLabel}`;
+});
+
+function isPdfSubmittalFile(file) {
+  return file?.mime_type === 'application/pdf' || file?.original_filename?.toLowerCase()?.endsWith('.pdf');
+}
+
+function onUploadFilesSelected(event) {
+  selectedUploadFiles.value = Array.from(event.target.files || []);
+}
+
+function uploadPdfFiles() {
+  if (!selectedUploadFiles.value.length) {
+    return;
+  }
+
+  isUploadingFiles.value = true;
+
+  router.post(
+    route('submittals.files.store', props.submittal.id),
+    {
+      files: selectedUploadFiles.value,
+    },
+    {
+      forceFormData: true,
+      onFinish: () => {
+        isUploadingFiles.value = false;
+      },
+      onSuccess: () => {
+        selectedUploadFiles.value = [];
+      },
+    }
+  );
+}
+
+function updatePurpose() {
+  purposeUpdateInProgress.value = true;
+
+  router.patch(
+    route('submittals.purpose.update', props.submittal.id),
+    {
+      purpose: purposeForm.value.purpose,
+    },
+    {
+      preserveScroll: true,
+      onFinish: () => {
+        purposeUpdateInProgress.value = false;
+      },
+    }
+  );
+}
+
+function openMarkupWorkspace(fileId) {
+  activeMarkupFileId.value = fileId;
+}
+
+function closeMarkupWorkspace() {
+  activeMarkupFileId.value = null;
+}
 </script>
 
 <template>
@@ -155,7 +226,7 @@ const approvalTypeLabels = {
               @click="submitForApproval"
               class="inline-flex items-center px-3 py-2 bg-blue-600 border border-transparent rounded-md text-xs font-semibold text-white hover:bg-blue-700 transition uppercase tracking-widest"
             >
-              Submit for Approval
+              {{ submitButtonLabel }}
             </button>
             <button
               v-if="submittal.status === 'submitted'"
@@ -191,7 +262,30 @@ const approvalTypeLabels = {
               <dl class="divide-y divide-gray-200">
                 <div class="px-6 py-4 grid grid-cols-3 gap-4">
                   <dt class="text-sm font-medium text-gray-500">Purpose</dt>
-                  <dd class="text-sm text-gray-900 col-span-2">{{ submittal.purpose || '-' }}</dd>
+                  <dd class="text-sm text-gray-900 col-span-2">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <select
+                        v-model="purposeForm.purpose"
+                        class="block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:max-w-sm"
+                      >
+                        <option
+                          v-for="(label, value) in purposeOptions"
+                          :key="value"
+                          :value="value"
+                        >
+                          {{ label }}
+                        </option>
+                      </select>
+                      <button
+                        type="button"
+                        class="inline-flex items-center px-3 py-2 bg-primary-600 border border-transparent rounded-md text-xs font-semibold text-white hover:bg-primary-700 transition uppercase tracking-widest disabled:opacity-50"
+                        :disabled="purposeUpdateInProgress"
+                        @click="updatePurpose"
+                      >
+                        {{ purposeUpdateInProgress ? 'Saving...' : 'Update Purpose' }}
+                      </button>
+                    </div>
+                  </dd>
                 </div>
                 <div class="px-6 py-4 grid grid-cols-3 gap-4">
                   <dt class="text-sm font-medium text-gray-500">Discipline</dt>
@@ -226,7 +320,96 @@ const approvalTypeLabels = {
               </dl>
             </div>
 
-            <PdfMarkupWorkspace :submittal-id="submittal.id" :files="submittal.files || []" />
+            <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">Submittal PDF Files</h2>
+                <p class="mt-1 text-sm text-gray-500">Upload PDFs and open one in the markup workspace.</p>
+              </div>
+              <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <input
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    multiple
+                    class="block w-full text-sm text-gray-600 file:mr-4 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-primary-700 hover:file:bg-primary-100"
+                    @change="onUploadFilesSelected"
+                  />
+                  <button
+                    type="button"
+                    class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md text-xs font-semibold text-white hover:bg-primary-700 transition uppercase tracking-widest disabled:opacity-50"
+                    :disabled="isUploadingFiles || !selectedUploadFiles.length"
+                    @click="uploadPdfFiles"
+                  >
+                    {{ isUploadingFiles ? 'Uploading...' : 'Upload PDF Files' }}
+                  </button>
+                </div>
+              </div>
+              <div v-if="submittal.files?.length" class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        File
+                      </th>
+                      <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Uploaded
+                      </th>
+                      <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Uploaded By
+                      </th>
+                      <th class="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="file in submittal.files" :key="file.id">
+                      <td class="px-5 py-3 text-sm text-gray-900">{{ file.original_filename }}</td>
+                      <td class="px-5 py-3 text-sm text-gray-500">
+                        {{ formatDisplayDateTime(file.uploaded_at, '-') }}
+                      </td>
+                      <td class="px-5 py-3 text-sm text-gray-500">{{ file.uploaded_by?.name || '-' }}</td>
+                      <td class="px-5 py-3 text-right text-sm font-medium space-x-3">
+                        <button
+                          v-if="isPdfSubmittalFile(file)"
+                          type="button"
+                          class="text-primary-600 hover:text-primary-800"
+                          @click="openMarkupWorkspace(file.id)"
+                        >
+                          Open Markup Workspace
+                        </button>
+                        <Link
+                          :href="route('submittals.files.download', [submittal.id, file.id])"
+                          class="text-primary-600 hover:text-primary-800"
+                        >
+                          Download
+                        </Link>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-else class="px-6 py-8 text-center text-sm text-gray-500">
+                No PDF files uploaded yet.
+              </div>
+            </div>
+
+            <div v-if="activeMarkupFileId" class="space-y-3">
+              <div class="flex justify-end">
+                <button
+                  type="button"
+                  class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition uppercase tracking-widest"
+                  @click="closeMarkupWorkspace"
+                >
+                  Close Markup Workspace
+                </button>
+              </div>
+              <PdfMarkupWorkspace
+                :submittal-id="submittal.id"
+                :files="submittal.files || []"
+                :initial-file-id="activeMarkupFileId"
+              />
+            </div>
 
             <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
               <div class="px-6 py-4 border-b border-gray-200">
