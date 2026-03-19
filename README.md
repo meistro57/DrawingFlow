@@ -1,7 +1,9 @@
 # DrawingFlow
 <img width="706" height="585" alt="image" src="https://github.com/user-attachments/assets/54d4bd5f-7612-4780-b12b-62b4a20e81a1" />
 
-Steel fabrication drawing workflow system built with Laravel 12, Inertia, and Vue 3.
+# Steel fabrication drawing workflow system built with Laravel 12, Inertia, and Vue 3.
+
+<img width="1395" height="1435" alt="image" src="https://github.com/user-attachments/assets/63acf839-1b1c-4e96-8c81-5bde0eceea05" />
 
 ## Tech Stack
 
