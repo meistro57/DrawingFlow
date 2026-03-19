@@ -25,6 +25,7 @@ class Project extends Model
         'target_completion_date',
         'status',
         'notes',
+        'model_link',
     ];
 
     protected function casts(): array

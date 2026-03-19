@@ -152,6 +152,19 @@ function formatFileSize(sizeInBytes) {
                   {{ formatDisplayDate(project.target_completion_date) }}
                 </dd>
               </div>
+              <div v-if="project.model_link" class="px-6 py-4 grid grid-cols-3 gap-4">
+                <dt class="text-sm font-medium text-gray-500">3D Model</dt>
+                <dd class="text-sm text-gray-900 col-span-2">
+                  <a
+                    :href="project.model_link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-primary-600 hover:text-primary-800 hover:underline"
+                  >
+                    Open 3D Model
+                  </a>
+                </dd>
+              </div>
               <div v-if="project.notes" class="px-6 py-4 grid grid-cols-3 gap-4">
                 <dt class="text-sm font-medium text-gray-500">Notes</dt>
                 <dd class="text-sm text-gray-900 col-span-2 whitespace-pre-line">

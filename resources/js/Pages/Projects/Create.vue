@@ -22,6 +22,7 @@ const form = useForm({
   target_completion_date: '',
   status: 'active',
   notes: '',
+  model_link: '',
   attachments: [],
 });
 const isDraggingFiles = ref(false);
@@ -211,6 +212,19 @@ function formatFileSize(sizeInBytes) {
                   {{ form.errors.target_completion_date }}
                 </p>
               </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">3D Model Link</label>
+              <input
+                v-model="form.model_link"
+                type="url"
+                placeholder="https://example.com/model/123"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              />
+              <p v-if="form.errors.model_link" class="mt-1 text-sm text-red-600">
+                {{ form.errors.model_link }}
+              </p>
             </div>
 
             <div>
