@@ -250,47 +250,6 @@ watch(theme, (nextTheme) => {
           <!-- User Menu -->
           <div class="hidden sm:flex sm:items-center sm:space-x-4">
             <div class="relative">
-              <input
-                v-model="globalSearchQuery"
-                type="search"
-                placeholder="Search #, project, request, submittal..."
-                class="w-80 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                @input="onGlobalSearchInput"
-                @focus="onGlobalSearchInput"
-                @blur="hideGlobalSearchResults"
-              />
-
-              <div
-                v-if="showGlobalSearchResults"
-                class="absolute right-0 z-50 mt-2 w-[28rem] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
-              >
-                <div
-                  v-if="isGlobalSearchLoading"
-                  class="px-4 py-3 text-sm text-gray-500 dark:text-slate-300"
-                >
-                  Searching...
-                </div>
-                <div
-                  v-else-if="globalSearchResults.length === 0"
-                  class="px-4 py-3 text-sm text-gray-500 dark:text-slate-300"
-                >
-                  No matches found.
-                </div>
-                <button
-                  v-for="result in globalSearchResults"
-                  :key="`${result.type}-${result.url}`"
-                  type="button"
-                  class="block w-full border-b border-gray-100 px-4 py-3 text-left last:border-b-0 hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800"
-                  @mousedown.prevent="openGlobalSearchResult(result)"
-                >
-                  <p class="text-sm font-medium text-gray-900 dark:text-slate-100">{{ result.title }}</p>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
-                    {{ result.type.replace('_', ' ') }}<span v-if="result.subtitle"> · {{ result.subtitle }}</span>
-                  </p>
-                </button>
-              </div>
-            </div>
-            <div class="relative">
               <button
                 type="button"
                 class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-all duration-150 ease-out hover:bg-gray-50 active:scale-90 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -404,6 +363,48 @@ watch(theme, (nextTheme) => {
             >
               Logout
             </button>
+          </div>
+
+          <div class="relative hidden lg:block">
+            <input
+              v-model="globalSearchQuery"
+              type="search"
+              placeholder="Search #, project, request, submittal..."
+              class="w-80 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              @input="onGlobalSearchInput"
+              @focus="onGlobalSearchInput"
+              @blur="hideGlobalSearchResults"
+            />
+
+            <div
+              v-if="showGlobalSearchResults"
+              class="absolute right-0 z-50 mt-2 w-[28rem] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
+            >
+              <div
+                v-if="isGlobalSearchLoading"
+                class="px-4 py-3 text-sm text-gray-500 dark:text-slate-300"
+              >
+                Searching...
+              </div>
+              <div
+                v-else-if="globalSearchResults.length === 0"
+                class="px-4 py-3 text-sm text-gray-500 dark:text-slate-300"
+              >
+                No matches found.
+              </div>
+              <button
+                v-for="result in globalSearchResults"
+                :key="`${result.type}-${result.url}`"
+                type="button"
+                class="block w-full border-b border-gray-100 px-4 py-3 text-left last:border-b-0 hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800"
+                @mousedown.prevent="openGlobalSearchResult(result)"
+              >
+                <p class="text-sm font-medium text-gray-900 dark:text-slate-100">{{ result.title }}</p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                  {{ result.type.replace('_', ' ') }}<span v-if="result.subtitle"> · {{ result.subtitle }}</span>
+                </p>
+              </button>
+            </div>
           </div>
 
           <!-- Mobile menu button -->
