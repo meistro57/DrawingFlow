@@ -71,12 +71,6 @@ function formatSize(size) {
             >
               Boost
             </Link>
-            <Link
-              :href="route('admin.agent-flow.index')"
-              class="inline-flex items-center rounded-md border border-white/30 bg-white/40 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-800 backdrop-blur-md transition hover:bg-white/60 dark:border-slate-600/60 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-900/60"
-            >
-              Agent Flow
-            </Link>
           </div>
         </div>
 

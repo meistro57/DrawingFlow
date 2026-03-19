@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\AgentFlowController;
 use App\Http\Controllers\Admin\BoostController;
 use App\Http\Controllers\Admin\DataBackupController;
 use App\Http\Controllers\Admin\UserManagementController;
@@ -102,7 +101,6 @@ Route::middleware('auth')->group(function () {
         Route::get('boost/mcp-status', [BoostController::class, 'mcpStatus'])->name('boost.mcp-status');
         Route::get('boost/browser-logs', [BoostController::class, 'browserLogs'])->name('boost.browser-logs');
         Route::delete('boost/browser-logs', [BoostController::class, 'clearBrowserLogs'])->name('boost.browser-logs.clear');
-        Route::get('agent-flow', [AgentFlowController::class, 'index'])->name('agent-flow.index');
 
         Route::get('backups', [DataBackupController::class, 'index'])->name('backups.index');
         Route::post('backups', [DataBackupController::class, 'store'])->name('backups.store');
