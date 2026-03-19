@@ -96,5 +96,7 @@ class DatabaseSeeder extends Seeder
             'submittal_email' => 'drawings@smitheng.example.com',
             'approval_sla_days' => 10,
         ]);
+
+        $this->call(DemoWorkflowSeeder::class);
     }
 }
