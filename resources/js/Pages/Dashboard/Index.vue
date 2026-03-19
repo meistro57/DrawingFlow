@@ -57,6 +57,7 @@ const workloadCards = computed(() => [
     tone: 'from-slate-900 to-slate-700 dark:from-slate-200 dark:to-slate-400',
     text: 'text-white dark:text-slate-950',
     hint: `${props.my_workload.due_this_week} due this week`,
+    href: route('drawing-requests.index'),
   },
   {
     name: 'Submittals Needing Action',
@@ -64,6 +65,7 @@ const workloadCards = computed(() => [
     tone: 'from-amber-500 to-orange-500 dark:from-amber-400 dark:to-orange-400',
     text: 'text-white dark:text-slate-950',
     hint: 'Drafts and revisions waiting on you',
+    href: route('submittals.index'),
   },
   {
     name: 'Fab Assignments',
@@ -71,6 +73,7 @@ const workloadCards = computed(() => [
     tone: 'from-emerald-500 to-teal-500 dark:from-emerald-400 dark:to-teal-400',
     text: 'text-white dark:text-slate-950',
     hint: 'Active work in fabrication',
+    href: route('fab-queue.index'),
   },
 ]);
 
@@ -249,10 +252,11 @@ function priorityBadgeClasses(priority) {
           </div>
 
           <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div
+            <Link
               v-for="card in workloadCards"
               :key="card.name"
-              class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+              :href="card.href"
+              class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500/60 dark:border-slate-800 dark:bg-slate-900"
             >
               <div :class="[card.tone, card.text, 'bg-gradient-to-br p-5']">
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] opacity-80">
@@ -260,8 +264,11 @@ function priorityBadgeClasses(priority) {
                 </p>
                 <p class="mt-4 text-4xl font-bold">{{ card.value }}</p>
                 <p class="mt-2 text-sm opacity-80">{{ card.hint }}</p>
+                <p class="mt-3 text-xs font-semibold uppercase tracking-wider opacity-90 group-hover:underline">
+                  Open
+                </p>
               </div>
-            </div>
+            </Link>
           </div>
         </section>
 
