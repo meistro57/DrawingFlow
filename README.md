@@ -11,6 +11,8 @@ Steel fabrication drawing workflow system built with Laravel 12, Inertia, and Vu
 - Vue `^3.5`
 - Vite `^7`
 - Tailwind CSS `^4`
+- Laravel MCP `^0.6`
+- Laravel Boost `^2.2` (dev)
 - MySQL 8, Redis 7, Meilisearch, Mailhog (via Docker Compose)
 
 ## Repository Layout
@@ -57,6 +59,21 @@ npm install
 npm run dev
 ```
 
+### Docker + Sail commands
+
+This project includes Laravel Sail (`vendor/bin/sail`), but the Docker app service is named `app` (not `laravel.test`).
+If you use Sail, set the service explicitly:
+
+```bash
+SAIL_SERVICE=app vendor/bin/sail artisan about
+```
+
+Or use direct Docker commands:
+
+```bash
+docker compose exec -T app php artisan about
+```
+
 ### HTTPS (self-signed or official certificate)
 
 ```bash
@@ -81,6 +98,14 @@ composer test
 composer lint
 composer lint:fix
 composer analyse
+```
+
+### Artisan (Docker app container)
+
+```bash
+docker compose exec app php artisan list
+docker compose exec app php artisan test
+docker compose exec app php artisan pail
 ```
 
 ### Frontend
@@ -148,6 +173,26 @@ From `database/seeders/DatabaseSeeder.php`:
 - Fab queue numbers are generated as `FAB-YYYY-####`.
 - Main workflow pages are under `resources/js/Pages/`.
 - Web routes are in `routes/web.php`.
+
+## MCP + Boost
+
+This app has first-party MCP support and Boost installed.
+
+- Project MCP config: `.mcp.json`
+- Boost config: `boost.json`
+- Start Boost MCP (inside container):
+
+```bash
+docker compose exec -T -e APP_ENV=local -e APP_DEBUG=true app php artisan boost:mcp
+```
+
+> Note: Boost only registers in local/debug contexts. The command above overrides env vars only for that process.
+
+- Health check MCP with Inspector:
+
+```bash
+docker compose exec -T app php artisan mcp:inspector
+```
 
 ## Recent Feature Updates
 
