@@ -365,12 +365,41 @@ watch(theme, (nextTheme) => {
             </button>
           </div>
 
-          <div class="relative hidden lg:block">
+          <!-- Mobile menu button -->
+          <div class="sm:hidden flex items-center">
+            <button
+              @click="showMobileMenu = !showMobileMenu"
+              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  v-if="!showMobileMenu"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+                <path
+                  v-else
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hidden border-t border-gray-200 px-4 py-3 sm:block dark:border-slate-800">
+        <div class="max-w-7xl mx-auto">
+          <div class="relative w-full lg:w-96">
             <input
               v-model="globalSearchQuery"
               type="search"
               placeholder="Search #, project, request, submittal..."
-              class="w-80 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               @input="onGlobalSearchInput"
               @focus="onGlobalSearchInput"
               @blur="hideGlobalSearchResults"
@@ -378,7 +407,7 @@ watch(theme, (nextTheme) => {
 
             <div
               v-if="showGlobalSearchResults"
-              class="absolute right-0 z-50 mt-2 w-[28rem] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
+              class="absolute left-0 z-50 mt-2 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
             >
               <div
                 v-if="isGlobalSearchLoading"
@@ -405,31 +434,6 @@ watch(theme, (nextTheme) => {
                 </p>
               </button>
             </div>
-          </div>
-
-          <!-- Mobile menu button -->
-          <div class="sm:hidden flex items-center">
-            <button
-              @click="showMobileMenu = !showMobileMenu"
-              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
-            >
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  v-if="!showMobileMenu"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-                <path
-                  v-else
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
           </div>
         </div>
       </div>
