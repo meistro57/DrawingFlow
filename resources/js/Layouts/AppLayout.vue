@@ -19,7 +19,12 @@ const showNotifications = ref(false);
 const notifications = ref([]);
 const unreadCount = ref(user.value?.notification_unread_count ?? 0);
 const isLoadingNotifications = ref(false);
+const globalSearchQuery = ref('');
+const globalSearchResults = ref([]);
+const showGlobalSearchResults = ref(false);
+const isGlobalSearchLoading = ref(false);
 let notificationsPoller = null;
+let globalSearchDebounce = null;
 
 function applyTheme(nextTheme) {
   const root = document.documentElement;
@@ -107,6 +112,58 @@ function toggleNotifications() {
   }
 }
 
+async function runGlobalSearch() {
+  const query = globalSearchQuery.value.trim();
+
+  if (query.length < 2) {
+    globalSearchResults.value = [];
+    showGlobalSearchResults.value = false;
+    return;
+  }
+
+  isGlobalSearchLoading.value = true;
+
+  try {
+    const response = await window.axios.get(route('search.global'), {
+      params: { q: query },
+    });
+
+    globalSearchResults.value = response.data?.data ?? [];
+    showGlobalSearchResults.value = true;
+  } catch {
+    globalSearchResults.value = [];
+    showGlobalSearchResults.value = true;
+  } finally {
+    isGlobalSearchLoading.value = false;
+  }
+}
+
+function onGlobalSearchInput() {
+  if (globalSearchDebounce !== null) {
+    clearTimeout(globalSearchDebounce);
+  }
+
+  globalSearchDebounce = setTimeout(() => {
+    runGlobalSearch();
+  }, 220);
+}
+
+function openGlobalSearchResult(result) {
+  globalSearchQuery.value = '';
+  globalSearchResults.value = [];
+  showGlobalSearchResults.value = false;
+
+  if (result?.url) {
+    router.visit(result.url);
+  }
+}
+
+function hideGlobalSearchResults() {
+  setTimeout(() => {
+    showGlobalSearchResults.value = false;
+  }, 120);
+}
+
 function logout() {
   router.post(route('logout'));
 }
@@ -131,6 +188,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (notificationsPoller !== null) {
     clearInterval(notificationsPoller);
+  }
+
+  if (globalSearchDebounce !== null) {
+    clearTimeout(globalSearchDebounce);
   }
 });
 
@@ -188,6 +249,47 @@ watch(theme, (nextTheme) => {
 
           <!-- User Menu -->
           <div class="hidden sm:flex sm:items-center sm:space-x-4">
+            <div class="relative">
+              <input
+                v-model="globalSearchQuery"
+                type="search"
+                placeholder="Search #, project, request, submittal..."
+                class="w-80 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                @input="onGlobalSearchInput"
+                @focus="onGlobalSearchInput"
+                @blur="hideGlobalSearchResults"
+              />
+
+              <div
+                v-if="showGlobalSearchResults"
+                class="absolute right-0 z-50 mt-2 w-[28rem] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
+              >
+                <div
+                  v-if="isGlobalSearchLoading"
+                  class="px-4 py-3 text-sm text-gray-500 dark:text-slate-300"
+                >
+                  Searching...
+                </div>
+                <div
+                  v-else-if="globalSearchResults.length === 0"
+                  class="px-4 py-3 text-sm text-gray-500 dark:text-slate-300"
+                >
+                  No matches found.
+                </div>
+                <button
+                  v-for="result in globalSearchResults"
+                  :key="`${result.type}-${result.url}`"
+                  type="button"
+                  class="block w-full border-b border-gray-100 px-4 py-3 text-left last:border-b-0 hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800"
+                  @mousedown.prevent="openGlobalSearchResult(result)"
+                >
+                  <p class="text-sm font-medium text-gray-900 dark:text-slate-100">{{ result.title }}</p>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                    {{ result.type.replace('_', ' ') }}<span v-if="result.subtitle"> · {{ result.subtitle }}</span>
+                  </p>
+                </button>
+              </div>
+            </div>
             <div class="relative">
               <button
                 type="button"
