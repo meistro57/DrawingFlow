@@ -393,8 +393,8 @@ watch(theme, (nextTheme) => {
       </div>
 
       <div class="hidden border-t border-gray-200 px-4 py-3 sm:block dark:border-slate-800">
-        <div class="max-w-7xl mx-auto">
-          <div class="relative w-full lg:w-96">
+        <div class="max-w-7xl mx-auto flex justify-center">
+          <div class="relative w-full max-w-xl">
             <input
               v-model="globalSearchQuery"
               type="search"
