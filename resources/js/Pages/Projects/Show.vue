@@ -1,5 +1,14 @@
 <script setup>
 import { ref, computed } from 'vue';
+
+const CATEGORY_LABELS = {
+  specs: 'Specs',
+  design_drawings: 'Design Drawings',
+  collab: 'Collab',
+  other: 'Other',
+};
+
+const CATEGORY_ORDER = ['specs', 'design_drawings', 'collab', 'other'];
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
@@ -13,6 +22,21 @@ const selectedPdfAttachmentId = ref(null);
 const selectedPdfAttachment = computed(() =>
   props.project.attachments?.find((attachment) => attachment.id === selectedPdfAttachmentId.value)
 );
+
+const attachmentsByCategory = computed(() => {
+  const attachments = props.project.attachments ?? [];
+  const groups = {};
+
+  for (const attachment of attachments) {
+    const cat = attachment.category || 'other';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(attachment);
+  }
+
+  return CATEGORY_ORDER
+    .filter((cat) => groups[cat]?.length)
+    .map((cat) => ({ key: cat, label: CATEGORY_LABELS[cat] ?? cat, attachments: groups[cat] }));
+});
 
 const selectedPdfViewerUrl = computed(() =>
   selectedPdfAttachmentId.value
@@ -204,94 +228,99 @@ function formatFileSize(sizeInBytes) {
             <h2 class="text-lg font-medium text-gray-900">Project Attachments</h2>
           </div>
           <div v-if="project.attachments?.length" class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    File
-                  </th>
-                  <th
-                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Version
-                  </th>
-                  <th
-                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Type
-                  </th>
-                  <th
-                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Size
-                  </th>
-                  <th
-                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Uploaded By
-                  </th>
-                  <th
-                    class="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr
-                  v-for="attachment in project.attachments"
-                  :key="attachment.id"
-                  class="transition hover:bg-gray-50"
-                >
-                  <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
-                    {{ attachment.original_filename }}
-                  </td>
-                  <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
-                    <span class="font-medium text-gray-700">v{{ attachment.version_number || 1 }}</span>
-                    <span
-                      v-if="attachment.is_latest"
-                      class="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700"
+            <template v-for="group in attachmentsByCategory" :key="group.key">
+              <div class="bg-gray-50 px-5 py-2 border-b border-gray-200">
+                <span class="text-xs font-semibold text-gray-600 uppercase tracking-wider">{{ group.label }}</span>
+              </div>
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                     >
-                      Latest
-                    </span>
-                  </td>
-                  <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {{ attachment.mime_type || '-' }}
-                  </td>
-                  <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {{ formatFileSize(attachment.file_size) }}
-                  </td>
-                  <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {{ attachment.uploaded_by?.name || '-' }}
-                  </td>
-                  <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                    <button
-                      v-if="isPdfAttachment(attachment)"
-                      type="button"
-                      class="text-primary-600 hover:text-primary-800"
-                      @click="openPdfViewer(attachment.id)"
+                      File
+                    </th>
+                    <th
+                      class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                     >
-                      View PDF
-                    </button>
-                    <Link
-                      :href="route('projects.attachments.download', [project.id, attachment.id])"
-                      class="text-primary-600 hover:text-primary-800"
+                      Version
+                    </th>
+                    <th
+                      class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                     >
-                      Download
-                    </Link>
-                    <button
-                      type="button"
-                      class="text-red-600 hover:text-red-800"
-                      @click="deleteAttachment(attachment)"
+                      Type
+                    </th>
+                    <th
+                      class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                     >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                      Size
+                    </th>
+                    <th
+                      class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    >
+                      Uploaded By
+                    </th>
+                    <th
+                      class="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr
+                    v-for="attachment in group.attachments"
+                    :key="attachment.id"
+                    class="transition hover:bg-gray-50"
+                  >
+                    <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
+                      {{ attachment.original_filename }}
+                    </td>
+                    <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
+                      <span class="font-medium text-gray-700">v{{ attachment.version_number || 1 }}</span>
+                      <span
+                        v-if="attachment.is_latest"
+                        class="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                      >
+                        Latest
+                      </span>
+                    </td>
+                    <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
+                      {{ attachment.mime_type || '-' }}
+                    </td>
+                    <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
+                      {{ formatFileSize(attachment.file_size) }}
+                    </td>
+                    <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
+                      {{ attachment.uploaded_by?.name || '-' }}
+                    </td>
+                    <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                      <button
+                        v-if="isPdfAttachment(attachment)"
+                        type="button"
+                        class="text-primary-600 hover:text-primary-800"
+                        @click="openPdfViewer(attachment.id)"
+                      >
+                        View PDF
+                      </button>
+                      <Link
+                        :href="route('projects.attachments.download', [project.id, attachment.id])"
+                        class="text-primary-600 hover:text-primary-800"
+                      >
+                        Download
+                      </Link>
+                      <button
+                        type="button"
+                        class="text-red-600 hover:text-red-800"
+                        @click="deleteAttachment(attachment)"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
           </div>
           <div v-else class="px-6 py-8 text-center text-sm text-gray-500">
             No attachments uploaded for this project yet.

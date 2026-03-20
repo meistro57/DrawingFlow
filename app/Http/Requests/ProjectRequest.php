@@ -33,6 +33,8 @@ class ProjectRequest extends FormRequest
             'model_link' => ['nullable', 'url', 'max:2048'],
             'attachments' => ['nullable', 'array', 'max:10'],
             'attachments.*' => ['file', 'max:30720', 'mimes:pdf,dwg,dxf,png,jpg,jpeg,doc,docx,xls,xlsx,csv,txt'],
+            'attachment_categories' => ['nullable', 'array'],
+            'attachment_categories.*' => ['nullable', 'string', Rule::in(['specs', 'design_drawings', 'collab', 'other'])],
         ];
     }
 }

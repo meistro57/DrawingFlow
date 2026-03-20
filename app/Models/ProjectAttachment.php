@@ -17,6 +17,7 @@ class ProjectAttachment extends Model
         'original_filename',
         'file_path',
         'document_key',
+        'category',
         'version_number',
         'is_latest',
         'file_size',

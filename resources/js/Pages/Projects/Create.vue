@@ -9,6 +9,13 @@ const props = defineProps({
   preselected_customer_id: [Number, String],
 });
 
+const ATTACHMENT_CATEGORIES = [
+  { value: 'specs', label: 'Specs' },
+  { value: 'design_drawings', label: 'Design Drawings' },
+  { value: 'collab', label: 'Collab' },
+  { value: 'other', label: 'Other' },
+];
+
 const form = useForm({
   project_number: '',
   name: '',
@@ -24,6 +31,7 @@ const form = useForm({
   notes: '',
   model_link: '',
   attachments: [],
+  attachment_categories: [],
 });
 const isDraggingFiles = ref(false);
 const fileInput = ref(null);
@@ -51,10 +59,12 @@ function setFiles(fileList) {
   }
 
   form.attachments = [...form.attachments, ...selectedFiles];
+  form.attachment_categories = [...form.attachment_categories, ...selectedFiles.map(() => 'other')];
 }
 
 function removeAttachment(index) {
   form.attachments.splice(index, 1);
+  form.attachment_categories.splice(index, 1);
 }
 
 function openFileDialog() {
@@ -288,15 +298,23 @@ function formatFileSize(sizeInBytes) {
                 <li
                   v-for="(file, index) in form.attachments"
                   :key="`${file.name}-${index}`"
-                  class="flex items-center justify-between px-3 py-2"
+                  class="flex items-center gap-3 px-3 py-2"
                 >
-                  <div class="min-w-0">
+                  <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-medium text-gray-900">{{ file.name }}</p>
                     <p class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</p>
                   </div>
+                  <select
+                    v-model="form.attachment_categories[index]"
+                    class="rounded-md border-gray-300 text-xs shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  >
+                    <option v-for="cat in ATTACHMENT_CATEGORIES" :key="cat.value" :value="cat.value">
+                      {{ cat.label }}
+                    </option>
+                  </select>
                   <button
                     type="button"
-                    class="text-xs font-semibold text-red-600 hover:text-red-700"
+                    class="text-xs font-semibold text-red-600 hover:text-red-700 shrink-0"
                     @click="removeAttachment(index)"
                   >
                     Remove

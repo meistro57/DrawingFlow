@@ -10,10 +10,12 @@ class ProjectAttachmentService
 {
     /**
      * @param  array<int, UploadedFile>  $files
+     * @param  array<int, string>  $categories
      */
-    public function storeUploadedFiles(Project $project, array $files, int $uploadedByUserId): void
+    public function storeUploadedFiles(Project $project, array $files, array $categories, int $uploadedByUserId): void
     {
-        foreach ($files as $file) {
+        foreach ($files as $index => $file) {
+            $category = $categories[$index] ?? 'other';
             $documentKey = $this->buildDocumentKey($file->getClientOriginalName());
 
             $latestVersion = $project->attachments()
@@ -35,6 +37,7 @@ class ProjectAttachmentService
                 'filename' => basename($storedPath),
                 'original_filename' => $file->getClientOriginalName(),
                 'document_key' => $documentKey,
+                'category' => $category,
                 'version_number' => $nextVersionNumber,
                 'is_latest' => true,
                 'file_path' => $storedPath,

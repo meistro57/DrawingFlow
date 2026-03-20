@@ -37,13 +37,14 @@ class ProjectController extends Controller
     {
         $validated = $request->validated();
         $attachments = $request->file('attachments', []);
+        $categories = $request->input('attachment_categories', []);
 
-        $project = DB::transaction(function () use ($validated, $attachments, $projectAttachmentService, $request): Project {
-            unset($validated['attachments']);
+        $project = DB::transaction(function () use ($validated, $attachments, $categories, $projectAttachmentService, $request): Project {
+            unset($validated['attachments'], $validated['attachment_categories']);
             $project = Project::create($validated);
 
             if ($attachments !== []) {
-                $projectAttachmentService->storeUploadedFiles($project, $attachments, (int) $request->user()->id);
+                $projectAttachmentService->storeUploadedFiles($project, $attachments, $categories, (int) $request->user()->id);
             }
 
             return $project;
@@ -84,13 +85,14 @@ class ProjectController extends Controller
     {
         $validated = $request->validated();
         $attachments = $request->file('attachments', []);
+        $categories = $request->input('attachment_categories', []);
 
-        DB::transaction(function () use ($project, $validated, $attachments, $projectAttachmentService, $request): void {
-            unset($validated['attachments']);
+        DB::transaction(function () use ($project, $validated, $attachments, $categories, $projectAttachmentService, $request): void {
+            unset($validated['attachments'], $validated['attachment_categories']);
             $project->update($validated);
 
             if ($attachments !== []) {
-                $projectAttachmentService->storeUploadedFiles($project, $attachments, (int) $request->user()->id);
+                $projectAttachmentService->storeUploadedFiles($project, $attachments, $categories, (int) $request->user()->id);
             }
         });
 
