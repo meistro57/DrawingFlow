@@ -164,7 +164,7 @@ function resetQuickFilters() {
 
         <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
           <div v-if="submittals.data.length" class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-[860px] divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
                   <th

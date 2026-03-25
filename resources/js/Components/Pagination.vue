@@ -18,14 +18,14 @@ defineProps({
       <Link
         v-if="links[0].url"
         :href="links[0].url"
-        class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        class="relative inline-flex min-h-11 items-center rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
       >
         Previous
       </Link>
       <Link
         v-if="links[links.length - 1].url"
         :href="links[links.length - 1].url"
-        class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        class="relative ml-3 inline-flex min-h-11 items-center rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
       >
         Next
       </Link>
@@ -45,7 +45,7 @@ defineProps({
               !link.url ? 'pointer-events-none text-gray-400' : '',
               index === 0 ? 'rounded-l-md' : '',
               index === links.length - 1 ? 'rounded-r-md' : '',
-              'relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20',
+              'relative inline-flex min-h-11 items-center px-4 py-2.5 text-sm font-semibold focus:z-20',
             ]"
           >
             <span v-html="link.label" />

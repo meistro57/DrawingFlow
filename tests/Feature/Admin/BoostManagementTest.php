@@ -43,6 +43,38 @@ class BoostManagementTest extends TestCase
             ->assertJsonStructure(['mcp_enabled', 'checked_at']);
     }
 
+    public function test_admin_can_fetch_boost_mcp_stats(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'active' => true,
+        ]);
+
+        File::ensureDirectoryExists(storage_path('logs'));
+        File::put(
+            storage_path('logs/mcp-events.log'),
+            "[2026-03-18 09:00:00] mcp.enabled status-check user=1 ip=127.0.0.1\n"
+            ."[2026-03-18 09:10:00] mcp.disabled status-check user=2 ip=127.0.0.2\n"
+            ."[2026-03-18 09:20:00] mcp.enabled status-check user=3 ip=127.0.0.3\n"
+        );
+
+        $this->actingAs($admin)
+            ->get(route('admin.boost.mcp-stats'))
+            ->assertOk()
+            ->assertJsonStructure([
+                'total_checks',
+                'checks_last_hour',
+                'checks_last_24h',
+                'uptime_percent',
+                'last_check_at',
+                'activity_timeline',
+                'recent_ips',
+                'recent_users',
+            ])
+            ->assertJsonPath('total_checks', 3)
+            ->assertJsonPath('uptime_percent', 66.7);
+    }
+
     public function test_admin_can_fetch_boost_browser_logs(): void
     {
         $admin = User::factory()->create([

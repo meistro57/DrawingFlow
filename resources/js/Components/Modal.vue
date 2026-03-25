@@ -66,7 +66,7 @@ watch(
               v-show="show"
               :class="[
                 maxWidthClass[maxWidth],
-                'relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:my-8 sm:w-full',
+                'relative w-full transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:my-8 sm:w-full max-h-[calc(100vh-2rem)] overflow-y-auto',
               ]"
             >
               <div v-if="title" class="border-b border-gray-200 px-6 py-4">

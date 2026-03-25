@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
@@ -8,12 +8,58 @@ import Modal from '@/Components/Modal.vue';
 const props = defineProps({
   entry: Object,
   users: Array,
+  submittalFiles: {
+    type: Array,
+    default: () => [],
+  },
+  projectFiles: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 const showAssignModal = ref(false);
 const assignUserId = ref(props.entry.assigned_to_user_id || '');
 const shopNotes = ref(props.entry.shop_notes || '');
 const notes = ref(props.entry.notes || '');
+
+const documents = computed(() => {
+  const submittalDocs = props.submittalFiles.map((file) => ({
+    ...file,
+    sourceLabel: 'Submittal',
+  }));
+
+  const projectDocs = props.projectFiles.map((file) => ({
+    ...file,
+    sourceLabel: 'Project',
+  }));
+
+  return [...submittalDocs, ...projectDocs];
+});
+
+const selectedDocumentId = ref(
+  documents.value.find((file) => canInlineView(file))?.id ?? documents.value[0]?.id ?? null
+);
+
+const selectedDocument = computed(
+  () => documents.value.find((file) => file.id === selectedDocumentId.value) ?? null
+);
+
+const selectedDocumentViewUrl = computed(() => {
+  if (!selectedDocument.value || !canInlineView(selectedDocument.value)) {
+    return null;
+  }
+
+  return selectedDocument.value.view_url;
+});
+
+function canInlineView(file) {
+  return file?.mime_type === 'application/pdf' || file?.filename?.toLowerCase()?.endsWith('.pdf');
+}
+
+function selectDocument(fileId) {
+  selectedDocumentId.value = fileId;
+}
 
 function assignUser() {
   router.post(
@@ -208,8 +254,69 @@ function saveNotes() {
             </div>
           </div>
 
-          <!-- Sidebar placeholder -->
-          <div></div>
+          <div class="space-y-6">
+            <div class="bg-white shadow-sm rounded-lg border border-gray-200">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">Documents</h2>
+              </div>
+              <div v-if="documents.length" class="divide-y divide-gray-200">
+                <button
+                  v-for="file in documents"
+                  :key="`${file.source}-${file.id}`"
+                  type="button"
+                  class="w-full px-6 py-3 text-left transition hover:bg-gray-50"
+                  :class="selectedDocumentId === file.id ? 'bg-primary-50' : ''"
+                  @click="selectDocument(file.id)"
+                >
+                  <p class="text-sm font-medium text-gray-900">{{ file.filename }}</p>
+                  <p class="mt-1 text-xs text-gray-500">
+                    {{ file.sourceLabel }}
+                    <span v-if="file.category"> · {{ file.category }}</span>
+                    <span v-if="file.file_type"> · {{ file.file_type }}</span>
+                    <span v-if="file.file_size"> · {{ file.file_size }}</span>
+                  </p>
+                  <p class="mt-1 text-xs text-gray-500">Uploaded {{ file.uploaded_at || '-' }}</p>
+                </button>
+              </div>
+              <div v-else class="px-6 py-6 text-sm text-gray-500">No documents available.</div>
+            </div>
+
+            <div class="bg-white shadow-sm rounded-lg border border-gray-200">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900">Document Viewer</h2>
+              </div>
+              <div class="p-6" v-if="selectedDocument">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                  <p class="text-sm font-medium text-gray-900 truncate">
+                    {{ selectedDocument.filename }}
+                  </p>
+                  <a
+                    :href="selectedDocument.download_url"
+                    class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 uppercase tracking-widest"
+                  >
+                    Download
+                  </a>
+                </div>
+
+                <iframe
+                  v-if="selectedDocumentViewUrl"
+                  :src="selectedDocumentViewUrl"
+                  class="w-full h-[520px] rounded-md border border-gray-200"
+                  title="Fab Queue Document Viewer"
+                />
+
+                <div
+                  v-else
+                  class="rounded-md border border-dashed border-gray-300 p-6 text-sm text-gray-500"
+                >
+                  Inline preview is available for PDF files only.
+                </div>
+              </div>
+              <div v-else class="px-6 py-6 text-sm text-gray-500">
+                Select a document to preview.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -62,6 +62,8 @@ class DataBackupManagementTest extends TestCase
         $payload = json_decode(Storage::disk('local')->get($files[0]), true);
 
         $this->assertIsArray($payload);
+        $this->assertSame(1, $payload['schema_version'] ?? null);
+        $this->assertIsString($payload['signature'] ?? null);
         $this->assertArrayHasKey('tables', $payload);
         $this->assertNotEmpty($payload['tables']);
     }
@@ -101,6 +103,30 @@ class DataBackupManagementTest extends TestCase
             'id' => $managedUser->id,
             'name' => 'Original Name',
         ]);
+    }
+
+    public function test_admin_restore_rejects_unsigned_backup_file(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'active' => true,
+        ]);
+
+        $backupUpload = UploadedFile::fake()->createWithContent(
+            'restore-backup.json',
+            json_encode([
+                'schema_version' => 1,
+                'generated_at' => now()->toIso8601String(),
+                'tables' => [],
+            ])
+        );
+
+        $this->actingAs($admin)
+            ->post(route('admin.backups.restore'), [
+                'backup_file' => $backupUpload,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('error');
     }
 
     public function test_non_admin_user_cannot_create_or_restore_backups(): void

@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class NotificationController extends Controller
 {
     public function index(): JsonResponse
     {
-        $notifications = auth()->user()
+        $user = auth()->user();
+        $notifications = $user
             ->notifications()
             ->latest()
             ->limit(20)
@@ -16,13 +19,14 @@ class NotificationController extends Controller
 
         return response()->json([
             'data' => $notifications,
-            'unread_count' => auth()->user()->unreadNotifications()->count(),
+            'unread_count' => $this->unreadCount($user),
         ]);
     }
 
     public function markAsRead(string $notification): JsonResponse
     {
-        $targetNotification = auth()->user()
+        $user = auth()->user();
+        $targetNotification = $user
             ->notifications()
             ->whereKey($notification)
             ->firstOrFail();
@@ -31,19 +35,37 @@ class NotificationController extends Controller
             $targetNotification->markAsRead();
         }
 
+        Cache::forget($this->unreadCountCacheKey($user));
+
         return response()->json([
             'success' => true,
-            'unread_count' => auth()->user()->fresh()->unreadNotifications()->count(),
+            'unread_count' => $this->unreadCount($user->fresh()),
         ]);
     }
 
     public function markAllAsRead(): JsonResponse
     {
-        auth()->user()->unreadNotifications->markAsRead();
+        $user = auth()->user();
+        $user->unreadNotifications->markAsRead();
+        Cache::forget($this->unreadCountCacheKey($user));
 
         return response()->json([
             'success' => true,
-            'unread_count' => 0,
+            'unread_count' => $this->unreadCount($user->fresh()),
         ]);
+    }
+
+    private function unreadCount(User $user): int
+    {
+        return Cache::remember(
+            $this->unreadCountCacheKey($user),
+            now()->addSeconds(30),
+            fn (): int => $user->unreadNotifications()->count()
+        );
+    }
+
+    private function unreadCountCacheKey(User $user): string
+    {
+        return "users:{$user->id}:notification_unread_count";
     }
 }

@@ -89,7 +89,9 @@ function deleteUser(user) {
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">Admin Panel</h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">Manage user roles and account status.</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">
+              Manage user roles and account status.
+            </p>
           </div>
           <div class="flex items-center gap-2">
             <Link
@@ -192,7 +194,9 @@ function deleteUser(user) {
               </div>
             </div>
           </div>
-          <div class="flex justify-end border-t border-white/40 bg-white/40 px-5 py-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+          <div
+            class="flex justify-end border-t border-white/40 bg-white/40 px-5 py-3 dark:border-slate-700/60 dark:bg-slate-900/40"
+          >
             <button
               type="submit"
               :disabled="createForm.processing"
@@ -203,9 +207,11 @@ function deleteUser(user) {
           </div>
         </form>
 
-        <div class="overflow-hidden rounded-2xl border border-white/40 bg-white/60 shadow-xl shadow-slate-200/30 backdrop-blur-lg dark:border-slate-700/60 dark:bg-slate-900/50 dark:shadow-black/30">
+        <div
+          class="overflow-hidden rounded-2xl border border-white/40 bg-white/60 shadow-xl shadow-slate-200/30 backdrop-blur-lg dark:border-slate-700/60 dark:bg-slate-900/50 dark:shadow-black/30"
+        >
           <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-white/40 dark:divide-slate-700/60">
+            <table class="min-w-[980px] divide-y divide-white/40 dark:divide-slate-700/60">
               <thead class="bg-white/60 dark:bg-slate-900/60">
                 <tr>
                   <th
@@ -240,7 +246,9 @@ function deleteUser(user) {
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-white/30 bg-white/40 dark:divide-slate-700/60 dark:bg-slate-900/30">
+              <tbody
+                class="divide-y divide-white/30 bg-white/40 dark:divide-slate-700/60 dark:bg-slate-900/30"
+              >
                 <tr
                   v-for="user in users.data"
                   :key="user.id"

@@ -240,8 +240,8 @@ Observed patterns in tests:
 1. **No additional rule files in requested locations**
    - Only `AGENTS.md` exists among the specified agent-rule paths.
 
-2. **No repository CI workflow config observed**
-   - `.github/workflows/` was not found; do not assume CI checks run remotely.
+2. **CI workflow config exists in-repo**
+   - `.github/workflows/` is present; align local validation with configured CI checks when touching build/test/lint behavior.
 
 3. **Route-model binding depends on non-standard parameter names**
    - `submittal` and `fab_queue` bindings are explicit in `AppServiceProvider`; changing param names can break resolution.
@@ -262,6 +262,10 @@ Observed patterns in tests:
 8. **Boost MCP tooling is environment-gated**
    - `laravel/boost` MCP registration depends on local/debug context in `BoostServiceProvider::shouldRun()`.
    - Running Boost MCP commands may require `APP_ENV=local` and `APP_DEBUG=true` in container executions.
+
+9. **Container migrations may require `--force`**
+   - In this environment, `docker compose exec app php artisan migrate` can trigger Laravel's production safety prompt.
+   - Use `docker compose exec app php artisan migrate --force` for non-interactive container runs.
 
 ---
 

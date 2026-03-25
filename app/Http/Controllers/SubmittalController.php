@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProcessSubmittalApprovalRequest;
+use App\Http\Requests\UpdateSubmittalPurposeRequest;
 use App\Models\DrawingRequest;
 use App\Models\DrawingSubmittal;
 use App\Models\User;
@@ -9,9 +11,7 @@ use App\Notifications\SubmittalApprovalRecorded;
 use App\Services\FabHandoffService;
 use App\Services\SubmittalService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -52,13 +52,9 @@ class SubmittalController extends Controller
         ]);
     }
 
-    public function updatePurpose(Request $request, DrawingSubmittal $submittal): RedirectResponse
+    public function updatePurpose(UpdateSubmittalPurposeRequest $request, DrawingSubmittal $submittal): RedirectResponse
     {
-        $validated = $request->validate([
-            'purpose' => ['required', Rule::in(array_keys(DrawingSubmittal::PURPOSE_OPTIONS))],
-        ]);
-
-        $purpose = $validated['purpose'];
+        $purpose = $request->validated('purpose');
 
         if (DB::getDriverName() === 'sqlite') {
             $purpose = match ($purpose) {
@@ -90,18 +86,9 @@ class SubmittalController extends Controller
         return back()->with('success', 'Submittal has been submitted for approval.');
     }
 
-    public function processApproval(Request $request, DrawingSubmittal $submittal): RedirectResponse
+    public function processApproval(ProcessSubmittalApprovalRequest $request, DrawingSubmittal $submittal): RedirectResponse
     {
-        $validated = $request->validate([
-            'approval_type' => 'required|in:approved,approved_as_noted,revise_and_resubmit,rejected,field_verify_required',
-            'reviewer_name' => 'nullable|string|max:255',
-            'reviewer_title' => 'nullable|string|max:255',
-            'reviewer_company' => 'nullable|string|max:255',
-            'reviewer_email' => 'nullable|email|max:255',
-            'approval_notes' => 'nullable|string',
-            'conditions' => 'nullable|string',
-        ]);
-
+        $validated = $request->validated();
         $validated['created_by_user_id'] = auth()->id();
 
         $this->service->processApproval($submittal, $validated['approval_type'], $validated);

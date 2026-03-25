@@ -33,9 +33,11 @@ const attachmentsByCategory = computed(() => {
     groups[cat].push(attachment);
   }
 
-  return CATEGORY_ORDER
-    .filter((cat) => groups[cat]?.length)
-    .map((cat) => ({ key: cat, label: CATEGORY_LABELS[cat] ?? cat, attachments: groups[cat] }));
+  return CATEGORY_ORDER.filter((cat) => groups[cat]?.length).map((cat) => ({
+    key: cat,
+    label: CATEGORY_LABELS[cat] ?? cat,
+    attachments: groups[cat],
+  }));
 });
 
 const selectedPdfViewerUrl = computed(() =>
@@ -100,9 +102,9 @@ function formatFileSize(sizeInBytes) {
           >
         </div>
 
-        <div class="flex items-center justify-between mb-8">
+        <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div class="flex items-center space-x-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
               <h1 class="text-2xl font-bold text-gray-900">{{ project.name }}</h1>
               <StatusBadge :status="project.status" />
             </div>
@@ -119,7 +121,7 @@ function formatFileSize(sizeInBytes) {
               </span>
             </p>
           </div>
-          <div class="flex space-x-3">
+          <div class="flex flex-wrap gap-2">
             <Link
               :href="route('drawing-requests.create', { project_id: project.id })"
               class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 transition-all duration-150 ease-out active:scale-95 hover:shadow-sm"
@@ -143,20 +145,23 @@ function formatFileSize(sizeInBytes) {
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <!-- Details -->
-          <div class="lg:col-span-2 bg-white shadow-sm rounded-lg border border-gray-200">
+          <div class="lg:sm:col-span-2 bg-white shadow-sm rounded-lg border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200">
               <h2 class="text-lg font-medium text-gray-900">Project Details</h2>
             </div>
             <dl class="divide-y divide-gray-200">
-              <div v-if="project.description" class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div
+                v-if="project.description"
+                class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4"
+              >
                 <dt class="text-sm font-medium text-gray-500">Description</dt>
-                <dd class="text-sm text-gray-900 col-span-2 whitespace-pre-line">
+                <dd class="text-sm text-gray-900 sm:col-span-2 whitespace-pre-line">
                   {{ project.description }}
                 </dd>
               </div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                 <dt class="text-sm font-medium text-gray-500">Address</dt>
-                <dd class="text-sm text-gray-900 col-span-2">
+                <dd class="text-sm text-gray-900 sm:col-span-2">
                   <template v-if="project.address">
                     {{ project.address }}<br />
                     {{ project.city }}, {{ project.state }} {{ project.zip }}
@@ -164,21 +169,24 @@ function formatFileSize(sizeInBytes) {
                   <template v-else>-</template>
                 </dd>
               </div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                 <dt class="text-sm font-medium text-gray-500">Start Date</dt>
-                <dd class="text-sm text-gray-900 col-span-2">
+                <dd class="text-sm text-gray-900 sm:col-span-2">
                   {{ formatDisplayDate(project.start_date) }}
                 </dd>
               </div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                 <dt class="text-sm font-medium text-gray-500">Target Completion</dt>
-                <dd class="text-sm text-gray-900 col-span-2">
+                <dd class="text-sm text-gray-900 sm:col-span-2">
                   {{ formatDisplayDate(project.target_completion_date) }}
                 </dd>
               </div>
-              <div v-if="project.model_link" class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div
+                v-if="project.model_link"
+                class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4"
+              >
                 <dt class="text-sm font-medium text-gray-500">3D Model</dt>
-                <dd class="text-sm text-gray-900 col-span-2">
+                <dd class="text-sm text-gray-900 sm:col-span-2">
                   <a
                     :href="project.model_link"
                     target="_blank"
@@ -189,9 +197,12 @@ function formatFileSize(sizeInBytes) {
                   </a>
                 </dd>
               </div>
-              <div v-if="project.notes" class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div
+                v-if="project.notes"
+                class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4"
+              >
                 <dt class="text-sm font-medium text-gray-500">Notes</dt>
-                <dd class="text-sm text-gray-900 col-span-2 whitespace-pre-line">
+                <dd class="text-sm text-gray-900 sm:col-span-2 whitespace-pre-line">
                   {{ project.notes }}
                 </dd>
               </div>
@@ -230,9 +241,11 @@ function formatFileSize(sizeInBytes) {
           <div v-if="project.attachments?.length" class="overflow-x-auto">
             <template v-for="group in attachmentsByCategory" :key="group.key">
               <div class="bg-gray-50 px-5 py-2 border-b border-gray-200">
-                <span class="text-xs font-semibold text-gray-600 uppercase tracking-wider">{{ group.label }}</span>
+                <span class="text-xs font-semibold text-gray-600 uppercase tracking-wider">{{
+                  group.label
+                }}</span>
               </div>
-              <table class="min-w-full divide-y divide-gray-200">
+              <table class="min-w-[900px] divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                   <tr>
                     <th
@@ -277,7 +290,9 @@ function formatFileSize(sizeInBytes) {
                       {{ attachment.original_filename }}
                     </td>
                     <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
-                      <span class="font-medium text-gray-700">v{{ attachment.version_number || 1 }}</span>
+                      <span class="font-medium text-gray-700"
+                        >v{{ attachment.version_number || 1 }}</span
+                      >
                       <span
                         v-if="attachment.is_latest"
                         class="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700"
@@ -294,7 +309,9 @@ function formatFileSize(sizeInBytes) {
                     <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
                       {{ attachment.uploaded_by?.name || '-' }}
                     </td>
-                    <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                    <td
+                      class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium space-x-3"
+                    >
                       <button
                         v-if="isPdfAttachment(attachment)"
                         type="button"
@@ -331,7 +348,9 @@ function formatFileSize(sizeInBytes) {
           v-if="selectedPdfViewerUrl"
           class="mt-8 bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"
         >
-          <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div
+            class="flex flex-col gap-2 border-b border-gray-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+          >
             <h2 class="text-lg font-medium text-gray-900">
               PDF Viewer
               <span v-if="selectedPdfAttachment" class="text-sm text-gray-500 font-normal">
@@ -346,14 +365,16 @@ function formatFileSize(sizeInBytes) {
               Close Viewer
             </button>
           </div>
-          <div class="h-[70vh]">
+          <div class="h-[60vh] max-h-[calc(100vh-8rem)] sm:h-[70vh]">
             <iframe :src="selectedPdfViewerUrl" title="Project PDF Viewer" class="h-full w-full" />
           </div>
         </div>
 
         <!-- Drawing Requests -->
         <div class="mt-8 bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-          <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div
+            class="flex flex-col gap-2 border-b border-gray-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+          >
             <h2 class="text-lg font-medium text-gray-900">Drawing Requests</h2>
             <Link
               :href="route('drawing-requests.create', { project_id: project.id })"
@@ -362,68 +383,67 @@ function formatFileSize(sizeInBytes) {
               Add Request
             </Link>
           </div>
-          <table
-            v-if="project.drawing_requests?.length"
-            class="min-w-full divide-y divide-gray-200"
-          >
-            <thead class="bg-gray-50">
-              <tr>
-                <th
-                  class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Number
-                </th>
-                <th
-                  class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Title
-                </th>
-                <th
-                  class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Assigned To
-                </th>
-                <th
-                  class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Priority
-                </th>
-                <th
-                  class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr
-                v-for="request in project.drawing_requests"
-                :key="request.id"
-                class="hover:bg-gray-50 transition-colors duration-150 ease-out"
-              >
-                <td class="px-5 py-3 whitespace-nowrap text-sm font-medium">
-                  <Link
-                    :href="route('drawing-requests.show', request.id)"
-                    class="text-primary-600 hover:text-primary-800"
+          <div v-if="project.drawing_requests?.length" class="overflow-x-auto">
+            <table class="min-w-[760px] divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                   >
-                    {{ request.request_number }}
-                  </Link>
-                </td>
-                <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
-                  {{ request.title }}
-                </td>
-                <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
-                  {{ request.assigned_to?.name || 'Unassigned' }}
-                </td>
-                <td class="px-5 py-3 whitespace-nowrap">
-                  <StatusBadge :status="request.priority || 'normal'" />
-                </td>
-                <td class="px-5 py-3 whitespace-nowrap">
-                  <StatusBadge :status="request.status" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    Number
+                  </th>
+                  <th
+                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Title
+                  </th>
+                  <th
+                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Assigned To
+                  </th>
+                  <th
+                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Priority
+                  </th>
+                  <th
+                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr
+                  v-for="request in project.drawing_requests"
+                  :key="request.id"
+                  class="hover:bg-gray-50 transition-colors duration-150 ease-out"
+                >
+                  <td class="px-5 py-3 whitespace-nowrap text-sm font-medium">
+                    <Link
+                      :href="route('drawing-requests.show', request.id)"
+                      class="text-primary-600 hover:text-primary-800"
+                    >
+                      {{ request.request_number }}
+                    </Link>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
+                    {{ request.title }}
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
+                    {{ request.assigned_to?.name || 'Unassigned' }}
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <StatusBadge :status="request.priority || 'normal'" />
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <StatusBadge :status="request.status" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div v-else class="px-6 py-8 text-center text-sm text-gray-500">
             No drawing requests for this project yet.
           </div>

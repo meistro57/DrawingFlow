@@ -101,6 +101,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('boost', [BoostController::class, 'index'])->name('boost.index');
         Route::get('boost/mcp-status', [BoostController::class, 'mcpStatus'])->name('boost.mcp-status');
+        Route::get('boost/mcp-stats', [BoostController::class, 'mcpStats'])->name('boost.mcp-stats');
         Route::get('boost/browser-logs', [BoostController::class, 'browserLogs'])->name('boost.browser-logs');
         Route::delete('boost/browser-logs', [BoostController::class, 'clearBrowserLogs'])->name('boost.browser-logs.clear');
 

@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FabQueueAssignRequest;
+use App\Http\Requests\FabQueueUpdateNotesRequest;
 use App\Models\FabQueue;
 use App\Models\User;
 use App\Services\FabHandoffService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,21 +32,55 @@ class FabQueueController extends Controller
 
     public function show(FabQueue $fabQueue): Response
     {
-        $fabQueue->load(['submittal.drawingRequest', 'submittal.customer', 'project', 'assignedTo']);
+        $fabQueue->load([
+            'submittal.drawingRequest',
+            'submittal.customer',
+            'submittal.files',
+            'project.attachments' => fn ($q) => $q->where('is_latest', true)->orderBy('category')->orderBy('original_filename'),
+            'assignedTo',
+        ]);
+
+        $submittalFiles = collect();
+        if ($fabQueue->submittal) {
+            $submittalFiles = $fabQueue->submittal->files->map(fn ($file) => [
+                'id' => $file->id,
+                'filename' => $file->original_filename,
+                'mime_type' => $file->mime_type,
+                'file_size' => $file->file_size_formatted,
+                'file_type' => $file->file_type,
+                'uploaded_at' => $file->uploaded_at?->format('M j, Y'),
+                'view_url' => route('submittals.files.view', [$fabQueue->submittal_id, $file->id]),
+                'download_url' => route('submittals.files.download', [$fabQueue->submittal_id, $file->id]),
+                'source' => 'submittal',
+            ]);
+        }
+
+        $projectFiles = collect();
+        if ($fabQueue->project) {
+            $projectFiles = $fabQueue->project->attachments->map(fn ($file) => [
+                'id' => $file->id,
+                'filename' => $file->original_filename,
+                'mime_type' => $file->mime_type,
+                'file_size' => null,
+                'category' => $file->category,
+                'uploaded_at' => $file->created_at?->format('M j, Y'),
+                'view_url' => route('projects.attachments.view', [$fabQueue->project_id, $file->id]),
+                'download_url' => route('projects.attachments.download', [$fabQueue->project_id, $file->id]),
+                'source' => 'project',
+            ]);
+        }
 
         return Inertia::render('FabQueue/Show', [
             'entry' => $fabQueue,
             'users' => User::where('active', true)->orderBy('name')->get(['id', 'name', 'role']),
+            'submittalFiles' => $submittalFiles->values(),
+            'projectFiles' => $projectFiles->values(),
         ]);
     }
 
-    public function assign(Request $request, FabQueue $fabQueue): RedirectResponse
+    public function assign(FabQueueAssignRequest $request, FabQueue $fabQueue): RedirectResponse
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-        ]);
-
-        $user = User::findOrFail($validated['user_id']);
+        $user = User::findOrFail($request->validated('user_id'));
         $this->service->assignToFabricator($fabQueue, $user);
 
         return back()->with('success', "Assigned to {$user->name}.");
@@ -58,14 +93,9 @@ class FabQueueController extends Controller
         return back()->with('success', 'Fab queue entry marked as completed.');
     }
 
-    public function updateNotes(Request $request, FabQueue $fabQueue): RedirectResponse
+    public function updateNotes(FabQueueUpdateNotesRequest $request, FabQueue $fabQueue): RedirectResponse
     {
-        $validated = $request->validate([
-            'shop_notes' => 'nullable|string',
-            'notes' => 'nullable|string',
-        ]);
-
-        $fabQueue->update($validated);
+        $fabQueue->update($request->validated());
 
         return back()->with('success', 'Notes updated.');
     }

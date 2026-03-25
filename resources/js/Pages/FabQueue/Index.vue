@@ -140,7 +140,7 @@ function priorityClasses(priority) {
           <p class="mt-1 text-sm text-gray-500">Manage fabrication jobs ordered by priority.</p>
         </div>
 
-        <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
             <p class="text-xs uppercase tracking-wider text-gray-500">On This Page</p>
             <p class="mt-2 text-2xl font-semibold text-gray-900">{{ pageStats.total }}</p>
@@ -251,7 +251,7 @@ function priorityClasses(priority) {
 
         <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
           <div v-if="entries.data.length" class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-[860px] divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
                   <th
@@ -336,9 +336,7 @@ function priorityClasses(priority) {
                         {{ entry.assigned_to?.name || 'Unassigned' }}
                       </p>
                       <p class="text-xs text-gray-500">
-                        {{
-                          entry.assigned_to?.name ? 'Assigned fabricator' : 'Needs assignment'
-                        }}
+                        {{ entry.assigned_to?.name ? 'Assigned fabricator' : 'Needs assignment' }}
                       </p>
                     </div>
                   </td>

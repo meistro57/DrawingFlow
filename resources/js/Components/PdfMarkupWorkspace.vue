@@ -1558,7 +1558,7 @@ onBeforeUnmount(() => {
             type="text"
             maxlength="100"
             class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
-            placeholder='Optional override, e.g. 24"-0"'
+            placeholder="Optional override, e.g. 24 ft 0 in"
           />
         </label>
 

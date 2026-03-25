@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AssignDrawingRequestRequest;
 use App\Http\Requests\DrawingRequestFormRequest;
 use App\Models\Customer;
 use App\Models\DrawingRequest;
@@ -94,10 +95,9 @@ class DrawingRequestController extends Controller
             ->with('success', 'Drawing request deleted successfully.');
     }
 
-    public function assign(DrawingRequest $drawingRequest): RedirectResponse
+    public function assign(AssignDrawingRequestRequest $request, DrawingRequest $drawingRequest): RedirectResponse
     {
-        $userId = request()->validate(['user_id' => 'required|exists:users,id'])['user_id'];
-        $this->service->assign($drawingRequest, $userId);
+        $this->service->assign($drawingRequest, (int) $request->validated('user_id'));
 
         return back()->with('success', 'Drawing request assigned successfully.');
     }

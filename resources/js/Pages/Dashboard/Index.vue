@@ -187,14 +187,14 @@ function priorityBadgeClasses(priority) {
 
     <div class="py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="mb-8 flex items-center justify-between">
+        <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">Dashboard</h1>
             <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">
               Your work queue, project pressure points, and recent activity.
             </p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-wrap items-center gap-2">
             <Link
               :href="route('projects.create')"
               class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 transition hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -245,7 +245,7 @@ function priorityBadgeClasses(priority) {
             </div>
             <Link
               :href="route('drawing-requests.index')"
-              class="text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+              class="inline-flex min-h-11 items-center px-2 text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
             >
               Open request board
             </Link>
@@ -264,7 +264,9 @@ function priorityBadgeClasses(priority) {
                 </p>
                 <p class="mt-4 text-4xl font-bold">{{ card.value }}</p>
                 <p class="mt-2 text-sm opacity-80">{{ card.hint }}</p>
-                <p class="mt-3 text-xs font-semibold uppercase tracking-wider opacity-90 group-hover:underline">
+                <p
+                  class="mt-3 text-xs font-semibold uppercase tracking-wider opacity-90 group-hover:underline"
+                >
                   Open
                 </p>
               </div>
@@ -289,7 +291,7 @@ function priorityBadgeClasses(priority) {
               </div>
               <Link
                 :href="route('drawing-requests.index')"
-                class="text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+                class="inline-flex min-h-11 items-center px-2 text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
                 >View All</Link
               >
             </div>
@@ -378,7 +380,7 @@ function priorityBadgeClasses(priority) {
               </div>
               <Link
                 :href="route('submittals.index')"
-                class="text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+                class="inline-flex min-h-11 items-center px-2 text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
                 >View All</Link
               >
             </div>
@@ -432,7 +434,7 @@ function priorityBadgeClasses(priority) {
               </div>
               <Link
                 :href="route('fab-queue.index')"
-                class="text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+                class="inline-flex min-h-11 items-center px-2 text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
                 >View All</Link
               >
             </div>
@@ -492,7 +494,7 @@ function priorityBadgeClasses(priority) {
               </h2>
               <Link
                 :href="route('drawing-requests.index')"
-                class="text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+                class="inline-flex min-h-11 items-center px-2 text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
                 >View All</Link
               >
             </div>
@@ -530,7 +532,7 @@ function priorityBadgeClasses(priority) {
               </h2>
               <Link
                 :href="route('submittals.index')"
-                class="text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+                class="inline-flex min-h-11 items-center px-2 text-sm font-medium text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
                 >View All</Link
               >
             </div>

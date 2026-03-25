@@ -27,14 +27,14 @@ function deleteCustomer() {
         </div>
 
         <!-- Header -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div class="flex items-center space-x-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
               <h1 class="text-2xl font-bold text-gray-900">{{ customer.name }}</h1>
               <StatusBadge :status="customer.active ? 'active' : 'on_hold'" />
             </div>
           </div>
-          <div class="flex space-x-3">
+          <div class="flex flex-wrap gap-2">
             <Link
               :href="route('customers.edit', customer.id)"
               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest bg-white hover:bg-gray-50 transition"
@@ -52,22 +52,22 @@ function deleteCustomer() {
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <!-- Details Card -->
-          <div class="lg:col-span-2 bg-white shadow-sm rounded-lg border border-gray-200">
+          <div class="lg:sm:col-span-2 bg-white shadow-sm rounded-lg border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200">
               <h2 class="text-lg font-medium text-gray-900">Customer Details</h2>
             </div>
             <dl class="divide-y divide-gray-200">
-              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                 <dt class="text-sm font-medium text-gray-500">Email</dt>
-                <dd class="text-sm text-gray-900 col-span-2">{{ customer.email || '-' }}</dd>
+                <dd class="text-sm text-gray-900 sm:col-span-2">{{ customer.email || '-' }}</dd>
               </div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                 <dt class="text-sm font-medium text-gray-500">Phone</dt>
-                <dd class="text-sm text-gray-900 col-span-2">{{ customer.phone || '-' }}</dd>
+                <dd class="text-sm text-gray-900 sm:col-span-2">{{ customer.phone || '-' }}</dd>
               </div>
-              <div class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                 <dt class="text-sm font-medium text-gray-500">Address</dt>
-                <dd class="text-sm text-gray-900 col-span-2">
+                <dd class="text-sm text-gray-900 sm:col-span-2">
                   <template v-if="customer.address">
                     {{ customer.address }}<br />
                     {{ customer.city }}, {{ customer.state }} {{ customer.zip }}
@@ -76,9 +76,12 @@ function deleteCustomer() {
                   <template v-else>-</template>
                 </dd>
               </div>
-              <div v-if="customer.notes" class="px-6 py-4 grid grid-cols-3 gap-4">
+              <div
+                v-if="customer.notes"
+                class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4"
+              >
                 <dt class="text-sm font-medium text-gray-500">Notes</dt>
-                <dd class="text-sm text-gray-900 col-span-2 whitespace-pre-line">
+                <dd class="text-sm text-gray-900 sm:col-span-2 whitespace-pre-line">
                   {{ customer.notes }}
                 </dd>
               </div>
@@ -123,45 +126,51 @@ function deleteCustomer() {
           <div class="px-6 py-4 border-b border-gray-200">
             <h2 class="text-lg font-medium text-gray-900">Projects</h2>
           </div>
-          <table v-if="customer.projects?.length" class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th
-                  class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Number
-                </th>
-                <th
-                  class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Name
-                </th>
-                <th
-                  class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="project in customer.projects" :key="project.id" class="hover:bg-gray-50 transition-colors duration-150 ease-out">
-                <td class="px-5 py-3 whitespace-nowrap text-sm">
-                  <Link
-                    :href="route('projects.show', project.id)"
-                    class="text-primary-600 hover:text-primary-800 font-medium"
+          <div v-if="customer.projects?.length" class="overflow-x-auto">
+            <table class="min-w-[640px] divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                   >
-                    {{ project.project_number }}
-                  </Link>
-                </td>
-                <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
-                  {{ project.name }}
-                </td>
-                <td class="px-5 py-3 whitespace-nowrap">
-                  <StatusBadge :status="project.status" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    Number
+                  </th>
+                  <th
+                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Name
+                  </th>
+                  <th
+                    class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr
+                  v-for="project in customer.projects"
+                  :key="project.id"
+                  class="hover:bg-gray-50 transition-colors duration-150 ease-out"
+                >
+                  <td class="px-5 py-3 whitespace-nowrap text-sm">
+                    <Link
+                      :href="route('projects.show', project.id)"
+                      class="text-primary-600 hover:text-primary-800 font-medium"
+                    >
+                      {{ project.project_number }}
+                    </Link>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
+                    {{ project.name }}
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <StatusBadge :status="project.status" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div v-else class="px-6 py-8 text-center text-sm text-gray-500">
             No projects for this customer yet.
           </div>

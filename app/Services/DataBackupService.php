@@ -35,6 +35,7 @@ class DataBackupService
         $filePath = "backups/drawingflow_backup_{$timestamp}.json";
 
         $payload = [
+            'schema_version' => 1,
             'generated_at' => now()->toIso8601String(),
             'tables' => [],
         ];
@@ -42,6 +43,8 @@ class DataBackupService
         foreach ($this->backupTableNames() as $tableName) {
             $payload['tables'][$tableName] = DB::table($tableName)->get()->map(fn ($row): array => (array) $row)->all();
         }
+
+        $payload['signature'] = $this->backupSignature($payload);
 
         Storage::disk('local')->put($filePath, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
@@ -59,6 +62,19 @@ class DataBackupService
 
         if (! is_array($decoded) || ! is_array(Arr::get($decoded, 'tables'))) {
             throw new RuntimeException('Invalid backup file format.');
+        }
+
+        if ((int) Arr::get($decoded, 'schema_version') !== 1) {
+            throw new RuntimeException('Backup file schema version is not supported.');
+        }
+
+        $signature = Arr::get($decoded, 'signature');
+        if (! is_string($signature) || $signature === '') {
+            throw new RuntimeException('Backup file signature is missing.');
+        }
+
+        if (! hash_equals($this->backupSignature($decoded), $signature)) {
+            throw new RuntimeException('Backup file signature is invalid.');
         }
 
         $tables = Arr::get($decoded, 'tables', []);
@@ -113,5 +129,36 @@ class DataBackupService
             ->reject(fn (string $tableName) => in_array($tableName, ['migrations', 'cache', 'cache_locks', 'jobs', 'job_batches', 'failed_jobs'], true))
             ->values()
             ->all();
+    }
+
+    private function backupSignature(array $payload): string
+    {
+        $appKey = (string) config('app.key');
+
+        if ($appKey === '') {
+            throw new RuntimeException('Application key is required to sign backups.');
+        }
+
+        if (str_starts_with($appKey, 'base64:')) {
+            $decodedKey = base64_decode(substr($appKey, 7), true);
+
+            if ($decodedKey !== false) {
+                $appKey = $decodedKey;
+            }
+        }
+
+        $signaturePayload = [
+            'schema_version' => Arr::get($payload, 'schema_version'),
+            'generated_at' => Arr::get($payload, 'generated_at'),
+            'tables' => Arr::get($payload, 'tables', []),
+        ];
+
+        $encodedPayload = json_encode($signaturePayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        if (! is_string($encodedPayload)) {
+            throw new RuntimeException('Unable to encode backup payload for signing.');
+        }
+
+        return hash_hmac('sha256', $encodedPayload, $appKey);
     }
 }

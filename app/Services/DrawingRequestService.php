@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\DrawingRequest;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class DrawingRequestService
 {
@@ -12,13 +14,23 @@ class DrawingRequestService
      */
     public function create(array $data): DrawingRequest
     {
-        return DB::transaction(function () use ($data) {
-            $data['request_number'] = $this->generateRequestNumber();
-            $data['requested_date'] = $data['requested_date'] ?? now()->toDateString();
-            $data['status'] = 'pending';
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            try {
+                return DB::transaction(function () use ($data) {
+                    $data['request_number'] = $this->generateRequestNumber();
+                    $data['requested_date'] = $data['requested_date'] ?? now()->toDateString();
+                    $data['status'] = 'pending';
 
-            return DrawingRequest::create($data);
-        });
+                    return DrawingRequest::create($data);
+                });
+            } catch (UniqueConstraintViolationException $exception) {
+                if ($attempt === 4) {
+                    throw $exception;
+                }
+            }
+        }
+
+        throw new RuntimeException('Could not generate a unique drawing request number.');
     }
 
     /**

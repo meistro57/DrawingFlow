@@ -93,10 +93,7 @@ const displayedCustomers = computed(() => {
       return true;
     }
 
-    return [customer.name, customer.email ?? '']
-      .join(' ')
-      .toLowerCase()
-      .includes(quickSearch);
+    return [customer.name, customer.email ?? ''].join(' ').toLowerCase().includes(quickSearch);
   });
 
   const multiplier = sortState.value.direction === 'asc' ? 1 : -1;
@@ -217,7 +214,7 @@ function activityLabel(customer) {
 
     <div class="py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="mb-6 flex items-center justify-between">
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-bold text-gray-900">Customers</h1>
             <p class="mt-1 text-sm text-gray-500">
@@ -232,7 +229,7 @@ function activityLabel(customer) {
           </Link>
         </div>
 
-        <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
             <p class="text-xs uppercase tracking-wider text-gray-500">On This Page</p>
             <p class="mt-2 text-2xl font-semibold text-gray-900">{{ pageStats.total }}</p>
@@ -438,7 +435,7 @@ function activityLabel(customer) {
 
         <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
           <div v-if="customers.data.length" class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-[860px] divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
                   <th

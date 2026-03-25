@@ -56,7 +56,7 @@ cp .env.example .env
 docker compose up -d
 docker compose exec app composer install
 docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --seed
+docker compose exec app php artisan migrate --seed --force
 npm install
 npm run dev
 ```
@@ -199,18 +199,23 @@ docker compose exec -T app php artisan mcp:inspector
 ## Recent Feature Updates
 
 - **Admin backup/restore** page is available at `admin.backups.index` for JSON backups, restore upload, and backup download.
+- **Backups are now integrity-protected** with `schema_version` metadata and HMAC signatures; restore rejects unsigned/tampered files.
 - **Legacy CSV import** command `php artisan data:import-legacy-csv` imports shop drawing requests, submittals, and fabrication queue records from the provided legacy CSV files.
+- **Fab Queue detail page** now includes a built-in document viewer for submittal files and latest project attachments with inline PDF preview and download.
 - **Fab Queue and Submittals tables** now match the richer Customers table UX with quick table filters and density controls.
 - **Phase 3 PDF workspace** on submittals now supports viewer + markups (circle, arrow, text, highlight, stamp).
 - **Markup export** endpoint provides a JSON export for saved markups.
 - **Revision comparison** is available with side-by-side PDF viewing in the submittal workspace.
 - **Markup history** is shown in the workspace with author and timestamp.
-- **Notification center** added to the app layout with unread badge, polling, and mark read / mark all read actions.
+- **Notification center** now uses short-lived unread-count caching and visibility-aware polling to reduce repeated requests.
+- **Authentication endpoints** now include login and registration rate limiting.
 - **Internal submittal notes** are now available on submittal detail pages for team communication.
 - **Customer imports** now include a downloadable CSV template directly on the Customers index page.
 - **State fields** on customer/project create & edit forms are dropdowns (US abbreviations) with backend validation.
 - **Project attachments** now support deletion from the project detail page.
-- **Boost admin workspace** includes MCP activity indicator + live log viewer with reset action.
+- **Boost admin workspace** includes MCP activity indicator + live log viewer with reset action and event-log retention pruning.
+- **Drawing request, submittal, and fab queue numbers** now retry generation on unique-collision conflicts.
+- **Dashboard/notification query indexes** were added for queue and unread-count paths.
 - **Drawing request detail** job number now links directly to the related project page.
 
 ## Additional Project Context

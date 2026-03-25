@@ -185,7 +185,11 @@ function formatFileSize(sizeInBytes) {
                   class="mt-1 block w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                   <option value="">Select state</option>
-                  <option v-for="stateOption in usStates" :key="stateOption.code" :value="stateOption.code">
+                  <option
+                    v-for="stateOption in usStates"
+                    :key="stateOption.code"
+                    :value="stateOption.code"
+                  >
                     {{ stateOption.code }} - {{ stateOption.name }}
                   </option>
                 </select>
@@ -308,7 +312,11 @@ function formatFileSize(sizeInBytes) {
                     v-model="form.attachment_categories[index]"
                     class="rounded-md border-gray-300 text-xs shadow-sm focus:border-primary-500 focus:ring-primary-500"
                   >
-                    <option v-for="cat in ATTACHMENT_CATEGORIES" :key="cat.value" :value="cat.value">
+                    <option
+                      v-for="cat in ATTACHMENT_CATEGORIES"
+                      :key="cat.value"
+                      :value="cat.value"
+                    >
                       {{ cat.label }}
                     </option>
                   </select>

@@ -25,6 +25,7 @@ const showGlobalSearchResults = ref(false);
 const isGlobalSearchLoading = ref(false);
 let notificationsPoller = null;
 let globalSearchDebounce = null;
+let visibilityHandler = null;
 
 function applyTheme(nextTheme) {
   const root = document.documentElement;
@@ -181,8 +182,18 @@ onMounted(() => {
 
   fetchNotifications();
   notificationsPoller = setInterval(() => {
-    fetchNotifications();
-  }, 15000);
+    if (document.visibilityState === 'visible') {
+      fetchNotifications();
+    }
+  }, 30000);
+
+  visibilityHandler = () => {
+    if (document.visibilityState === 'visible') {
+      fetchNotifications();
+    }
+  };
+
+  document.addEventListener('visibilitychange', visibilityHandler);
 });
 
 onBeforeUnmount(() => {
@@ -193,6 +204,10 @@ onBeforeUnmount(() => {
   if (globalSearchDebounce !== null) {
     clearTimeout(globalSearchDebounce);
   }
+
+  if (visibilityHandler !== null) {
+    document.removeEventListener('visibilitychange', visibilityHandler);
+  }
 });
 
 watch(theme, (nextTheme) => {
@@ -202,7 +217,9 @@ watch(theme, (nextTheme) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-200 dark:bg-slate-950">
+  <div
+    class="min-h-screen overflow-x-hidden bg-gray-200 dark:bg-slate-950 [&_button]:min-h-11 [&_a.inline-flex]:min-h-11"
+  >
     <!-- Navigation -->
     <nav class="bg-white border-b border-gray-200 dark:bg-slate-900 dark:border-slate-800">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -210,13 +227,16 @@ watch(theme, (nextTheme) => {
           <div class="flex">
             <!-- Logo -->
             <div class="shrink-0 flex items-center">
-              <Link href="/" class="inline-flex items-center text-primary-600 dark:text-primary-400">
+              <Link
+                href="/"
+                class="inline-flex items-center text-primary-600 dark:text-primary-400"
+              >
                 <img src="/DrawingFlowLogo.png" alt="DrawingFlow logo" class="mt-8 h-20 w-auto" />
               </Link>
             </div>
 
             <!-- Desktop Navigation -->
-            <div class="hidden sm:ml-8 sm:flex sm:space-x-4">
+            <div class="hidden lg:ml-8 lg:flex lg:space-x-4">
               <Link
                 v-for="item in navigation"
                 :key="item.name"
@@ -248,11 +268,11 @@ watch(theme, (nextTheme) => {
           </div>
 
           <!-- User Menu -->
-          <div class="hidden sm:flex sm:items-center sm:space-x-4">
+          <div class="hidden lg:flex lg:items-center lg:space-x-4">
             <div class="relative">
               <button
                 type="button"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-all duration-150 ease-out hover:bg-gray-50 active:scale-90 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-all duration-150 ease-out hover:bg-gray-50 active:scale-90 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 @click="toggleNotifications"
               >
                 <span class="sr-only">Notifications</span>
@@ -274,7 +294,7 @@ watch(theme, (nextTheme) => {
 
               <div
                 v-if="showNotifications"
-                class="absolute right-0 z-50 mt-2 w-96 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
+                class="absolute right-2 z-50 mt-2 w-[calc(100vw-1rem)] max-w-sm overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg sm:right-0 sm:w-96 dark:border-slate-700 dark:bg-slate-900"
               >
                 <div
                   class="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-slate-700"
@@ -284,7 +304,7 @@ watch(theme, (nextTheme) => {
                   </h3>
                   <button
                     type="button"
-                    class="text-xs font-medium text-primary-600 hover:text-primary-800"
+                    class="inline-flex min-h-11 items-center px-2 text-xs font-medium text-primary-600 hover:text-primary-800"
                     @click="markAllNotificationsAsRead"
                   >
                     Mark all read
@@ -366,10 +386,10 @@ watch(theme, (nextTheme) => {
           </div>
 
           <!-- Mobile menu button -->
-          <div class="sm:hidden flex items-center">
+          <div class="flex items-center lg:hidden">
             <button
               @click="showMobileMenu = !showMobileMenu"
-              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
+              class="inline-flex h-11 w-11 items-center justify-center rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
             >
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -392,7 +412,7 @@ watch(theme, (nextTheme) => {
         </div>
       </div>
 
-      <div class="hidden border-t border-gray-200 px-4 py-3 sm:block dark:border-slate-800">
+      <div class="hidden border-t border-gray-200 px-4 py-3 lg:block dark:border-slate-800">
         <div class="max-w-7xl mx-auto flex justify-center">
           <div class="relative w-full max-w-xl">
             <input
@@ -428,9 +448,12 @@ watch(theme, (nextTheme) => {
                 class="block w-full border-b border-gray-100 px-4 py-3 text-left last:border-b-0 hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800"
                 @mousedown.prevent="openGlobalSearchResult(result)"
               >
-                <p class="text-sm font-medium text-gray-900 dark:text-slate-100">{{ result.title }}</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-slate-100">
+                  {{ result.title }}
+                </p>
                 <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
-                  {{ result.type.replace('_', ' ') }}<span v-if="result.subtitle"> · {{ result.subtitle }}</span>
+                  {{ result.type.replace('_', ' ')
+                  }}<span v-if="result.subtitle"> · {{ result.subtitle }}</span>
                 </p>
               </button>
             </div>
@@ -439,13 +462,13 @@ watch(theme, (nextTheme) => {
       </div>
 
       <!-- Mobile menu -->
-      <div v-show="showMobileMenu" class="sm:hidden border-t border-gray-200 dark:border-slate-800">
+      <div v-show="showMobileMenu" class="border-t border-gray-200 lg:hidden dark:border-slate-800">
         <div class="pt-2 pb-3 space-y-1 px-4">
           <Link
             v-for="item in navigation"
             :key="item.name"
             :href="item.href"
-            class="block px-3 py-2 text-base font-medium rounded-md"
+            class="block min-h-11 rounded-md px-3 py-2.5 text-base font-medium"
             :class="[
               isActive(item)
                 ? 'text-primary-700 bg-primary-50 dark:text-primary-300 dark:bg-slate-800'
@@ -458,7 +481,7 @@ watch(theme, (nextTheme) => {
             href="https://github.com/meistro57/DrawingFlow/issues/new"
             target="_blank"
             rel="noopener noreferrer"
-            class="block px-3 py-2 text-base font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800"
+            class="block min-h-11 rounded-md px-3 py-2.5 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             Issues
           </a>

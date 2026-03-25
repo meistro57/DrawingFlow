@@ -55,8 +55,12 @@ function formatSize(size) {
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">Data Backup & Restore</h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">Create backups and restore system data.</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">
+              Data Backup & Restore
+            </h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">
+              Create backups and restore system data.
+            </p>
           </div>
           <div class="flex items-center gap-2">
             <Link
@@ -87,7 +91,9 @@ function formatSize(size) {
                 Generate a JSON snapshot of current application data.
               </p>
             </div>
-            <div class="flex justify-end border-t border-white/40 bg-white/40 px-5 py-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+            <div
+              class="flex justify-end border-t border-white/40 bg-white/40 px-5 py-3 dark:border-slate-700/60 dark:bg-slate-900/40"
+            >
               <button
                 type="submit"
                 :disabled="createBackupForm.processing"
@@ -121,7 +127,9 @@ function formatSize(size) {
                 </p>
               </div>
             </div>
-            <div class="flex justify-end border-t border-white/40 bg-white/40 px-5 py-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+            <div
+              class="flex justify-end border-t border-white/40 bg-white/40 px-5 py-3 dark:border-slate-700/60 dark:bg-slate-900/40"
+            >
               <button
                 type="submit"
                 :disabled="restoreForm.processing || !restoreForm.backup_file"
@@ -133,7 +141,9 @@ function formatSize(size) {
           </form>
         </div>
 
-        <div class="mt-6 overflow-hidden rounded-2xl border border-white/40 bg-white/60 shadow-xl shadow-slate-200/30 backdrop-blur-lg dark:border-slate-700/60 dark:bg-slate-900/50 dark:shadow-black/30">
+        <div
+          class="mt-6 overflow-hidden rounded-2xl border border-white/40 bg-white/60 shadow-xl shadow-slate-200/30 backdrop-blur-lg dark:border-slate-700/60 dark:bg-slate-900/50 dark:shadow-black/30"
+        >
           <div class="border-b border-white/40 px-5 py-4 dark:border-slate-700/60">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-700">
               Available Backups
@@ -145,7 +155,7 @@ function formatSize(size) {
           </div>
 
           <div v-else class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-white/40 dark:divide-slate-700/60">
+            <table class="min-w-[720px] divide-y divide-white/40 dark:divide-slate-700/60">
               <thead class="bg-white/60 dark:bg-slate-900/60">
                 <tr>
                   <th
@@ -170,7 +180,9 @@ function formatSize(size) {
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-white/30 bg-white/40 dark:divide-slate-700/60 dark:bg-slate-900/30">
+              <tbody
+                class="divide-y divide-white/30 bg-white/40 dark:divide-slate-700/60 dark:bg-slate-900/30"
+              >
                 <tr
                   v-for="backup in backups"
                   :key="backup.name"

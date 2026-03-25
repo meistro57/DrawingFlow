@@ -14,11 +14,15 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     ghostscript \
-    nodejs \
-    npm \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl \
     && pecl install redis imagick \
     && docker-php-ext-enable redis imagick \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 22 via NodeSource
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

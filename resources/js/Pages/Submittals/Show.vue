@@ -4,7 +4,6 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
 import Modal from '@/Components/Modal.vue';
-import PdfMarkupWorkspace from '@/Components/PdfMarkupWorkspace.vue';
 import { formatDisplayDateTime } from '@/utils/dateFormatting';
 
 const props = defineProps({
@@ -13,7 +12,6 @@ const props = defineProps({
 });
 
 const showApprovalModal = ref(false);
-const activeMarkupFileId = ref(null);
 const purposeForm = ref({
   purpose: props.submittal.purpose || 'for_approval',
 });
@@ -114,7 +112,10 @@ const submitButtonLabel = computed(() => {
 });
 
 function isPdfSubmittalFile(file) {
-  return file?.mime_type === 'application/pdf' || file?.original_filename?.toLowerCase()?.endsWith('.pdf');
+  return (
+    file?.mime_type === 'application/pdf' ||
+    file?.original_filename?.toLowerCase()?.endsWith('.pdf')
+  );
 }
 
 function onUploadFilesSelected(event) {
@@ -161,14 +162,6 @@ function updatePurpose() {
     }
   );
 }
-
-function openMarkupWorkspace(fileId) {
-  activeMarkupFileId.value = fileId;
-}
-
-function closeMarkupWorkspace() {
-  activeMarkupFileId.value = null;
-}
 </script>
 
 <template>
@@ -184,9 +177,9 @@ function closeMarkupWorkspace() {
         </div>
 
         <!-- Header -->
-        <div class="flex items-start justify-between mb-8">
+        <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div class="flex items-center space-x-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
               <h1 class="text-2xl font-bold text-gray-900">{{ submittal.submittal_number }}</h1>
               <span class="text-lg text-gray-500">Rev {{ submittal.revision }}</span>
               <StatusBadge :status="submittal.status" />
@@ -253,16 +246,16 @@ function closeMarkupWorkspace() {
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <!-- Main Content -->
-          <div class="lg:col-span-2 space-y-8">
+          <div class="lg:sm:col-span-2 space-y-8">
             <!-- Details -->
             <div class="bg-white shadow-sm rounded-lg border border-gray-200">
               <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-lg font-medium text-gray-900">Submittal Details</h2>
               </div>
               <dl class="divide-y divide-gray-200">
-                <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                   <dt class="text-sm font-medium text-gray-500">Purpose</dt>
-                  <dd class="text-sm text-gray-900 col-span-2">
+                  <dd class="text-sm text-gray-900 sm:col-span-2">
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
                       <select
                         v-model="purposeForm.purpose"
@@ -287,33 +280,42 @@ function closeMarkupWorkspace() {
                     </div>
                   </dd>
                 </div>
-                <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                   <dt class="text-sm font-medium text-gray-500">Discipline</dt>
-                  <dd class="text-sm text-gray-900 col-span-2">
+                  <dd class="text-sm text-gray-900 sm:col-span-2">
                     {{ submittal.drawing_discipline || '-' }}
                   </dd>
                 </div>
-                <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                   <dt class="text-sm font-medium text-gray-500">Submitted At</dt>
-                  <dd class="text-sm text-gray-900 col-span-2">
+                  <dd class="text-sm text-gray-900 sm:col-span-2">
                     {{ formatDisplayDateTime(submittal.submitted_at, 'Not yet submitted') }}
                   </dd>
                 </div>
-                <div v-if="submittal.approval_type" class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div
+                  v-if="submittal.approval_type"
+                  class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4"
+                >
                   <dt class="text-sm font-medium text-gray-500">Approval Type</dt>
-                  <dd class="text-sm text-gray-900 col-span-2">
+                  <dd class="text-sm text-gray-900 sm:col-span-2">
                     <StatusBadge :status="submittal.approval_type" />
                   </dd>
                 </div>
-                <div v-if="submittal.approval_notes" class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div
+                  v-if="submittal.approval_notes"
+                  class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4"
+                >
                   <dt class="text-sm font-medium text-gray-500">Approval Notes</dt>
-                  <dd class="text-sm text-gray-900 col-span-2 whitespace-pre-line">
+                  <dd class="text-sm text-gray-900 sm:col-span-2 whitespace-pre-line">
                     {{ submittal.approval_notes }}
                   </dd>
                 </div>
-                <div v-if="submittal.notes" class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div
+                  v-if="submittal.notes"
+                  class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4"
+                >
                   <dt class="text-sm font-medium text-gray-500">Notes</dt>
-                  <dd class="text-sm text-gray-900 col-span-2 whitespace-pre-line">
+                  <dd class="text-sm text-gray-900 sm:col-span-2 whitespace-pre-line">
                     {{ submittal.notes }}
                   </dd>
                 </div>
@@ -323,7 +325,9 @@ function closeMarkupWorkspace() {
             <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
               <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-lg font-medium text-gray-900">Submittal PDF Files</h2>
-                <p class="mt-1 text-sm text-gray-500">Upload PDFs and open one in the markup workspace.</p>
+                <p class="mt-1 text-sm text-gray-500">
+                  Upload PDFs and open one in the full-screen viewer.
+                </p>
               </div>
               <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -345,19 +349,27 @@ function closeMarkupWorkspace() {
                 </div>
               </div>
               <div v-if="submittal.files?.length" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-[760px] divide-y divide-gray-200">
                   <thead class="bg-gray-50">
                     <tr>
-                      <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th
+                        class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                      >
                         File
                       </th>
-                      <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th
+                        class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                      >
                         Uploaded
                       </th>
-                      <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th
+                        class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                      >
                         Uploaded By
                       </th>
-                      <th class="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th
+                        class="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                      >
                         Actions
                       </th>
                     </tr>
@@ -368,16 +380,19 @@ function closeMarkupWorkspace() {
                       <td class="px-5 py-3 text-sm text-gray-500">
                         {{ formatDisplayDateTime(file.uploaded_at, '-') }}
                       </td>
-                      <td class="px-5 py-3 text-sm text-gray-500">{{ file.uploaded_by?.name || '-' }}</td>
+                      <td class="px-5 py-3 text-sm text-gray-500">
+                        {{ file.uploaded_by?.name || '-' }}
+                      </td>
                       <td class="px-5 py-3 text-right text-sm font-medium space-x-3">
-                        <button
+                        <a
                           v-if="isPdfSubmittalFile(file)"
-                          type="button"
+                          :href="route('submittals.files.view', [submittal.id, file.id])"
+                          target="_blank"
+                          rel="noopener noreferrer"
                           class="text-primary-600 hover:text-primary-800"
-                          @click="openMarkupWorkspace(file.id)"
                         >
-                          Open Markup Workspace
-                        </button>
+                          Open Full Screen
+                        </a>
                         <Link
                           :href="route('submittals.files.download', [submittal.id, file.id])"
                           class="text-primary-600 hover:text-primary-800"
@@ -392,23 +407,6 @@ function closeMarkupWorkspace() {
               <div v-else class="px-6 py-8 text-center text-sm text-gray-500">
                 No PDF files uploaded yet.
               </div>
-            </div>
-
-            <div v-if="activeMarkupFileId" class="space-y-3">
-              <div class="flex justify-end">
-                <button
-                  type="button"
-                  class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition uppercase tracking-widest"
-                  @click="closeMarkupWorkspace"
-                >
-                  Close Markup Workspace
-                </button>
-              </div>
-              <PdfMarkupWorkspace
-                :submittal-id="submittal.id"
-                :files="submittal.files || []"
-                :initial-file-id="activeMarkupFileId"
-              />
             </div>
 
             <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
@@ -561,7 +559,7 @@ function closeMarkupWorkspace() {
           </select>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label class="block text-sm font-medium text-gray-700">Reviewer Name</label>
             <input
@@ -580,7 +578,7 @@ function closeMarkupWorkspace() {
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label class="block text-sm font-medium text-gray-700">Reviewer Company</label>
             <input

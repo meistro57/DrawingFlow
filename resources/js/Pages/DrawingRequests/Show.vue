@@ -80,9 +80,9 @@ const priorityClasses = {
         </div>
 
         <!-- Header -->
-        <div class="flex items-start justify-between mb-8">
+        <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div class="flex items-center space-x-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
               <h1 class="text-2xl font-bold text-gray-900">{{ drawingRequest.request_number }}</h1>
               <StatusBadge :status="drawingRequest.status" />
               <span
@@ -165,58 +165,66 @@ const priorityClasses = {
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <!-- Details -->
-          <div class="lg:col-span-2 space-y-8">
+          <div class="lg:sm:col-span-2 space-y-8">
             <div class="bg-white shadow-sm rounded-lg border border-gray-200">
               <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-lg font-medium text-gray-900">Request Details</h2>
               </div>
               <dl class="divide-y divide-gray-200">
-                <div v-if="drawingRequest.description" class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div
+                  v-if="drawingRequest.description"
+                  class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4"
+                >
                   <dt class="text-sm font-medium text-gray-500">Description</dt>
-                  <dd class="text-sm text-gray-900 col-span-2 whitespace-pre-line">
+                  <dd class="text-sm text-gray-900 sm:col-span-2 whitespace-pre-line">
                     {{ drawingRequest.description }}
                   </dd>
                 </div>
-                <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                   <dt class="text-sm font-medium text-gray-500">Drawing Type</dt>
-                  <dd class="text-sm text-gray-900 col-span-2">
+                  <dd class="text-sm text-gray-900 sm:col-span-2">
                     {{ drawingRequest.drawing_type || '-' }}
                   </dd>
                 </div>
-                <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                   <dt class="text-sm font-medium text-gray-500">Job Number</dt>
-                  <dd class="text-sm text-gray-900 col-span-2">
+                  <dd class="text-sm text-gray-900 sm:col-span-2">
                     <Link
                       v-if="drawingRequest.project"
                       :href="route('projects.show', drawingRequest.project.id)"
                       class="text-primary-600 hover:text-primary-800"
                     >
-                      {{ drawingRequest.job_number || drawingRequest.project.project_number || '-' }}
+                      {{
+                        drawingRequest.job_number || drawingRequest.project.project_number || '-'
+                      }}
                     </Link>
                     <span v-else>{{ drawingRequest.job_number || '-' }}</span>
                   </dd>
                 </div>
-                <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                   <dt class="text-sm font-medium text-gray-500">Customer Address</dt>
-                  <dd class="text-sm text-gray-900 col-span-2">
+                  <dd class="text-sm text-gray-900 sm:col-span-2">
                     {{ drawingRequest.customer_address || '-' }}
                   </dd>
                 </div>
-                <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                   <dt class="text-sm font-medium text-gray-500">Required Date</dt>
-                  <dd class="text-sm text-gray-900 col-span-2">
+                  <dd class="text-sm text-gray-900 sm:col-span-2">
                     {{ formatDisplayDate(drawingRequest.required_date) }}
                   </dd>
                 </div>
-                <div class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
                   <dt class="text-sm font-medium text-gray-500">Requested Date</dt>
-                  <dd class="text-sm text-gray-900 col-span-2">
+                  <dd class="text-sm text-gray-900 sm:col-span-2">
                     {{ formatDisplayDate(drawingRequest.requested_date) }}
                   </dd>
                 </div>
-                <div v-if="drawingRequest.notes" class="px-6 py-4 grid grid-cols-3 gap-4">
+                <div
+                  v-if="drawingRequest.notes"
+                  class="px-6 py-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4"
+                >
                   <dt class="text-sm font-medium text-gray-500">Notes</dt>
-                  <dd class="text-sm text-gray-900 col-span-2 whitespace-pre-line">
+                  <dd class="text-sm text-gray-900 sm:col-span-2 whitespace-pre-line">
                     {{ drawingRequest.notes }}
                   </dd>
                 </div>
@@ -228,56 +236,55 @@ const priorityClasses = {
               <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-lg font-medium text-gray-900">Submittals</h2>
               </div>
-              <table
-                v-if="drawingRequest.submittals?.length"
-                class="min-w-full divide-y divide-gray-200"
-              >
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th
-                      class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                    >
-                      Number
-                    </th>
-                    <th
-                      class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                    >
-                      Revision
-                    </th>
-                    <th
-                      class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                    >
-                      Submitted By
-                    </th>
-                    <th
-                      class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                    >
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                  <tr
-                    v-for="submittal in drawingRequest.submittals"
-                    :key="submittal.id"
-                    class="hover:bg-gray-50 transition-colors duration-150 ease-out"
-                  >
-                    <td class="px-5 py-3 text-sm">
-                      <Link
-                        :href="route('submittals.show', submittal.id)"
-                        class="text-primary-600 hover:text-primary-800 font-medium"
+              <div v-if="drawingRequest.submittals?.length" class="overflow-x-auto">
+                <table class="min-w-[640px] divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                       >
-                        {{ submittal.submittal_number }}
-                      </Link>
-                    </td>
-                    <td class="px-5 py-3 text-sm text-gray-900">Rev {{ submittal.revision }}</td>
-                    <td class="px-5 py-3 text-sm text-gray-500">
-                      {{ submittal.submitted_by?.name || '-' }}
-                    </td>
-                    <td class="px-5 py-3"><StatusBadge :status="submittal.status" /></td>
-                  </tr>
-                </tbody>
-              </table>
+                        Number
+                      </th>
+                      <th
+                        class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                      >
+                        Revision
+                      </th>
+                      <th
+                        class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                      >
+                        Submitted By
+                      </th>
+                      <th
+                        class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                      >
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr
+                      v-for="submittal in drawingRequest.submittals"
+                      :key="submittal.id"
+                      class="hover:bg-gray-50 transition-colors duration-150 ease-out"
+                    >
+                      <td class="px-5 py-3 text-sm">
+                        <Link
+                          :href="route('submittals.show', submittal.id)"
+                          class="text-primary-600 hover:text-primary-800 font-medium"
+                        >
+                          {{ submittal.submittal_number }}
+                        </Link>
+                      </td>
+                      <td class="px-5 py-3 text-sm text-gray-900">Rev {{ submittal.revision }}</td>
+                      <td class="px-5 py-3 text-sm text-gray-500">
+                        {{ submittal.submitted_by?.name || '-' }}
+                      </td>
+                      <td class="px-5 py-3"><StatusBadge :status="submittal.status" /></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <div v-else class="px-6 py-8 text-center text-sm text-gray-500">
                 No submittals created yet.
               </div>

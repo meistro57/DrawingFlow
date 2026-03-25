@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Models\DrawingSubmittal;
 use App\Models\FabQueue;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class FabHandoffService
 {
@@ -18,17 +20,25 @@ class FabHandoffService
             throw new \InvalidArgumentException('Submittal must be approved to create a fab queue entry.');
         }
 
-        return DB::transaction(function () use ($submittal) {
-            $queueNumber = $this->generateQueueNumber();
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            try {
+                return DB::transaction(function () use ($submittal) {
+                    return FabQueue::create([
+                        'submittal_id' => $submittal->id,
+                        'project_id' => $submittal->project_id,
+                        'queue_number' => $this->generateQueueNumber(),
+                        'priority' => $this->calculatePriority($submittal),
+                        'status' => 'queued',
+                    ]);
+                });
+            } catch (UniqueConstraintViolationException $exception) {
+                if ($attempt === 4) {
+                    throw $exception;
+                }
+            }
+        }
 
-            return FabQueue::create([
-                'submittal_id' => $submittal->id,
-                'project_id' => $submittal->project_id,
-                'queue_number' => $queueNumber,
-                'priority' => $this->calculatePriority($submittal),
-                'status' => 'queued',
-            ]);
-        });
+        throw new RuntimeException('Could not generate a unique fab queue number.');
     }
 
     /**
